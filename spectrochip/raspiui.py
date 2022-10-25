@@ -319,12 +319,10 @@ class Ui_mainwindow(object):
         self.pixel_graph.setBackground('w')
         self.pixel_graph.setLabel('left', 'Intensity')
         self.pixel_graph.setLabel('bottom', 'Pixel')
-        self.pixel_graph.setMouseEnabled(x = False, y = False)
         
         self.wavelength_graph.setBackground('w')
         self.wavelength_graph.setLabel('left', 'Intensity')
         self.wavelength_graph.setLabel('bottom', 'Wavelength')
-        self.wavelength_graph.setMouseEnabled(x = False, y = False)
         
         grey = QtGui.QPixmap(300,200)
         grey.fill(QtGui.QColor('darkgrey'))
@@ -550,7 +548,6 @@ class Ui_mainwindow(object):
         thickness = 3
         
         img1 = cv2.rectangle(img, roi_start_point, roi_end_point, roi_color, thickness)
-        #cv2.imwrite("img1.bmp", img)
         return img1
                             
     def draw_spectrum_graph_signal(self):
@@ -814,7 +811,6 @@ class Ui_w_calibration(object):
             y1.append(float(l7))
             
             z1 = np.polyfit(x1, y1, 3)
-            #p1 = np.poly1d(z1)
             p0 = []
             for i in range(len(z1)):
                 e = str(z1[i]).find('e')
@@ -910,14 +906,11 @@ def sum_image():
         imgformat = ui.format_box.currentText().lower()
         sImagePath = "./ttest/test.{}".format(imgformat)
         nImage = cv2.imread(sImagePath, cv2.IMREAD_GRAYSCALE)
-        #nColSum = np.sum(nImage, axis = 0)
         nRowSum = np.sum(nImage, axis = 1)
-        #print(np.argmax(nColSum))
         a = np.argmax(nRowSum)
         new_y0 = a-deltay/2
         if new_y0 <= 0:
             new_y0 = 0
-        #ui.y0.setText(str(int(new_y0)))
         signalComm.new_y0.emit()
         return 1
     except Exception as e:
@@ -943,7 +936,6 @@ def wavelength_convert():
         
 def checkluminous():
     try:
-        #print(I_max)
         if (max_value > I_max):
             return '0'
         elif (max_value > I_thr_top):
@@ -1018,9 +1010,7 @@ def number_ofscan():
 
 def cal_number_ofscan():
     try:
-        #print(np.shape(numb_ofscan))
         ncolmean = np.mean(np.asarray(numb_ofscan), axis = 0)
-        #print(np.shape(ncolmean))
         return 1
     except Exception as e:
         print('error:{}'.format(e))
@@ -1136,7 +1126,6 @@ def thread_1():
             check = crop_image()
             if check == 1:
                 mode = 31
-                #mode = 40
             else:
                 mode = 999
         elif mode == 31:
@@ -1152,11 +1141,11 @@ def thread_1():
                 else:
                     mode = 999
             else:
-                mode = 40
+                mode = 35
         elif mode == 32:
             check = cal_number_ofscan()
             if check == 1:
-                mode = 40
+                mode = 35
             else:
                 mode = 999
         elif mode == 35:
