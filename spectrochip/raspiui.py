@@ -62,6 +62,7 @@ max_value = 0
 goal_st = 0
 new_y0 = 0
 numb_ofscan = []
+ncolmean = []
 
 class SignalCommunication(QtCore.QObject):
     new_image = QtCore.pyqtSignal()
@@ -73,7 +74,7 @@ class SignalCommunication(QtCore.QObject):
 class Ui_mainwindow(object):
     def setupUi(self, mainwindow):
         mainwindow.setObjectName("mainwindow")
-        mainwindow.resize(831, 650)
+        mainwindow.resize(1280, 1180)
         self.centralwidget = QtWidgets.QWidget(mainwindow)
         self.centralwidget.setObjectName("centralwidget")
         self.start = QtWidgets.QPushButton(self.centralwidget)
@@ -131,10 +132,10 @@ class Ui_mainwindow(object):
         mainwindow.setStatusBar(self.statusbar)
         
         self.pixel_graph = pg.PlotWidget(self.centralwidget)
-        self.pixel_graph.setGeometry(QtCore.QRect(140, 420, 300, 200))
+        self.pixel_graph.setGeometry(QtCore.QRect(140, 420, 500, 400))
         
         self.wavelength_graph = pg.PlotWidget(self.centralwidget)
-        self.wavelength_graph.setGeometry(QtCore.QRect(470, 420, 300, 200))
+        self.wavelength_graph.setGeometry(QtCore.QRect(670, 420, 500, 400))
         
         self.image_frame = QtWidgets.QLabel(self.centralwidget)
         self.image_frame.setGeometry(QtCore.QRect(470, 5, 300, 200))
@@ -461,8 +462,8 @@ class Ui_mainwindow(object):
     def update_data(self):
         try:
             self.pixel_graph.clear()
-            x = np.arange(1,len(data)+1)
-            y = data
+            x = np.arange(1,len(ncolmean)+1)
+            y = ncolmean
             self.pixel_graph.plot(x, y)	
             
             return 1
@@ -474,7 +475,7 @@ class Ui_mainwindow(object):
         try:
             self.wavelength_graph.clear()
             x = wdata
-            y = data
+            y = ncolmean
             self.wavelength_graph.plot(x, y)	
             
             return 1
@@ -1009,8 +1010,10 @@ def number_ofscan():
         return 0
 
 def cal_number_ofscan():
+    global ncolmean
     try:
         ncolmean = np.mean(np.asarray(numb_ofscan), axis = 0)
+
         return 1
     except Exception as e:
         print('error:{}'.format(e))
@@ -1020,7 +1023,7 @@ def save_data():
     try:
         path = 'data.txt'
         f = open(path, 'w')
-        for i in data:
+        for i in ncolmean:
             f.write(str(i)+"\n")
         f.close()
         print("Save Complete")
@@ -1129,19 +1132,16 @@ def thread_1():
             else:
                 mode = 999
         elif mode == 31:
-            if int(num_scan) > 1 :
-                check = number_ofscan()
-                if check == 1:
-                    first_scan = 0
-                    scan_time += 1
-                    if scan_time < int(num_scan):
-                        mode = 10
-                    else:
-                        mode = 32
+            check = number_ofscan()
+            if check == 1:
+                first_scan = 0
+                scan_time += 1
+                if scan_time < int(num_scan):
+                    mode = 10
                 else:
-                    mode = 999
+                    mode = 32
             else:
-                mode = 35
+                mode = 999
         elif mode == 32:
             check = cal_number_ofscan()
             if check == 1:
