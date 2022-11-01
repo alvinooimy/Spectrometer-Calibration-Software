@@ -74,7 +74,7 @@ class SignalCommunication(QtCore.QObject):
 class Ui_mainwindow(object):
     def setupUi(self, mainwindow):
         mainwindow.setObjectName("mainwindow")
-        mainwindow.resize(1280, 1180)
+        mainwindow.resize(1280, 960)
         self.centralwidget = QtWidgets.QWidget(mainwindow)
         self.centralwidget.setObjectName("centralwidget")
         self.start = QtWidgets.QPushButton(self.centralwidget)
