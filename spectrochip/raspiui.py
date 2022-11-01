@@ -1287,10 +1287,7 @@ def thread_2():
             print("Auto Scaling Error")
             raise Exception
     print('Auto Scaling Complete')
-
-def thread_3():
-    pass
-        
+     
 if __name__ == "__main__":
     try:		
         app = QtWidgets.QApplication(sys.argv)
