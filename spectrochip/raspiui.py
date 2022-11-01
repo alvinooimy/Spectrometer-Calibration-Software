@@ -226,6 +226,17 @@ class Ui_mainwindow(object):
         self.w_cal_button = QtWidgets.QPushButton(self.centralwidget)
         self.w_cal_button.setGeometry(QtCore.QRect(500, 370, 90, 30))
         
+        self.cameraspec_label = QtWidgets.QLabel(self.centralwidget)
+        self.cameraspec_label.setGeometry(QtCore.QRect(800, 20, 200, 16))
+        self.cameraname_label = QtWidgets.QLabel(self.centralwidget)
+        self.cameraname_label.setGeometry(QtCore.QRect(800, 40, 200, 16))
+        self.camerawidth_label = QtWidgets.QLabel(self.centralwidget)
+        self.camerawidth_label.setGeometry(QtCore.QRect(800, 60, 200, 16))
+        self.cameraheight_label = QtWidgets.QLabel(self.centralwidget)
+        self.cameraheight_label.setGeometry(QtCore.QRect(800, 80, 200, 16))
+        self.camerapixelsize_label = QtWidgets.QLabel(self.centralwidget)
+        self.camerapixelsize_label.setGeometry(QtCore.QRect(800, 100, 200, 16))
+        
         self.retranslateUi(mainwindow)
         QtCore.QMetaObject.connectSlotsByName(mainwindow)
         
@@ -295,6 +306,11 @@ class Ui_mainwindow(object):
         self.I_thr_tolerance_label.setText(_translate("mainwindow", "Thr tolerance"))
         self.numberof_scan_label.setText(_translate("mainwindow", "Num of scan"))
         self.w_cal_button.setText(_translate("mainwindow", "Calculate"))
+        self.cameraspec_label.setText(_translate("mainwindow", "Camera Specification"))
+        self.cameraname_label.setText(_translate("mainwindow", "Model : OV9281"))
+        self.camerawidth_label.setText(_translate("mainwindow", "IMG Width : 1280"))
+        self.cameraheight_label.setText(_translate("mainwindow", "IMG Height : 800"))
+        self.camerapixelsize_label.setText(_translate("mainwindow", "Pixel Size : 3 \u03BCm x 3 \u03BCm"))
                 
         self.shutter_edit.setValidator(QtGui.QIntValidator())
         self.anologgain_edit.setValidator(QtGui.QDoubleValidator())
