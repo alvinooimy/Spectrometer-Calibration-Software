@@ -5,7 +5,6 @@ import numpy as np
 import pyqtgraph as pg
 import cv2, threading, subprocess
 
-sys.settrace
 np.set_printoptions(threshold = sys.maxsize)
 
 config = configparser.ConfigParser()
@@ -241,6 +240,7 @@ class Ui_mainwindow(object):
         self.camerapixelsize_label = QtWidgets.QLabel(self.centralwidget)
         self.camerapixelsize_label.setGeometry(QtCore.QRect(800, 100, 200, 16))
         
+        self.statusbar.showMessage("INITIALING")
         self.retranslateUi(mainwindow)
         QtCore.QMetaObject.connectSlotsByName(mainwindow)
         
@@ -274,6 +274,8 @@ class Ui_mainwindow(object):
         self.x1.setEnabled(False)
         self.Yaxis_max.setEnabled(False)
         self.w_cal_button.setEnabled(False)
+        
+        self.statusbar.showMessage("DONE")
                 
     def retranslateUi(self, mainwindow):
         global I_max, I_thr_percentage, I_thr_tolerance, I_thr, I_thr_top, I_thr_bottom
@@ -361,7 +363,7 @@ class Ui_mainwindow(object):
         self.I_thr_percentage_label1.setText(_translate("mainwindow", str(I_thr)))
         
         self.numberof_scan_edit.setText(numberof_scan_config)
-        self.numberof_scan_label1.setText(_translate("mainwindow", str((float(shutter) / 1000000) * float(num_scan)) + ' seconds'))
+        self.numberof_scan_label1.setText(_translate("mainwindow", str((float(shutter) / 1000000) * float(num_scan) + 0.5 * float(num_scan)) + ' seconds'))
         
         self.shutter_edit.setValidator(QtGui.QIntValidator())
         self.anologgain_edit.setValidator(QtGui.QDoubleValidator())
@@ -489,14 +491,14 @@ class Ui_mainwindow(object):
         num_scan = self.numberof_scan_edit.text()
         
         _translate = QtCore.QCoreApplication.translate
-        self.numberof_scan_label1.setText(_translate("mainwindow", str((float(shutter) / 1000000) * float(num_scan)) + ' seconds'))
+        self.numberof_scan_label1.setText(_translate("mainwindow", str((float(shutter) / 1000000) * float(num_scan) + 0.5 * float(num_scan)) + ' seconds'))
     
     def shutter_change(self):
         global shutter
         
         shutter = self.shutter_edit.text()
         _translate = QtCore.QCoreApplication.translate
-        self.numberof_scan_label1.setText(_translate("mainwindow", str((float(shutter) / 1000000) * float(num_scan)) + ' seconds'))
+        self.numberof_scan_label1.setText(_translate("mainwindow", str((float(shutter) / 1000000) * float(num_scan) + 0.5 * float(num_scan)) + ' seconds'))
         
     def roi_scan(self):
         global max_value, new_y1
@@ -1124,6 +1126,8 @@ def thread_1():
     scan_time = 0
     first_scan = 1
     
+    ui.statusbar.showMessage("CAPTURING IMAGE")
+    
     while True:
         if mode == 0:
             if flag == 1:
@@ -1216,12 +1220,16 @@ def thread_1():
                 mode = 999
         elif mode == 999:
             print("Main Function Error")
+            ui.statusbar.showMessage("CAPTURE IMAGE Error")
             raise Exception
     print("Main Function Complete")
+    ui.statusbar.showMessage("CAPTURE IMAGE COMPLETE")
     
 def thread_2():
     global auto_mode
     t_times = 0
+    
+    ui.statusbar.showMessage("AUTO SCALING")
     
     while True:
         if auto_mode == 1:
@@ -1319,8 +1327,10 @@ def thread_2():
                 auto_mode = 999
         elif auto_mode == 999:
             print("Auto Scaling Error")
+            ui.statusbar.showMessage("AUTO SCALING Error")
             raise Exception
     print('Auto Scaling Complete')
+    ui.statusbar.showMessage("AUTO SCALING Complete")
      
 if __name__ == "__main__":
     try:		
