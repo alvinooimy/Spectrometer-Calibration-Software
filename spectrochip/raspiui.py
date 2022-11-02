@@ -206,6 +206,8 @@ class Ui_mainwindow(object):
         self.I_max_label.setGeometry(QtCore.QRect(110, 280, 150, 16))
         self.I_thr_percentage_label = QtWidgets.QLabel(self.centralwidget)
         self.I_thr_percentage_label.setGeometry(QtCore.QRect(110, 320, 150, 16))
+        self.I_thr_percentage_label1 = QtWidgets.QLabel(self.centralwidget)
+        self.I_thr_percentage_label1.setGeometry(QtCore.QRect(285, 320, 150, 16))
         self.I_thr_tolerance_label = QtWidgets.QLabel(self.centralwidget)
         self.I_thr_tolerance_label.setGeometry(QtCore.QRect(110, 360, 150, 16))
         self.I_thr_tolerance_label1 = QtWidgets.QLabel(self.centralwidget)
@@ -222,6 +224,8 @@ class Ui_mainwindow(object):
         self.numberof_scan_label.setGeometry(QtCore.QRect(110, 390, 150, 16))
         self.numberof_scan_edit = QtWidgets.QLineEdit(self.centralwidget)
         self.numberof_scan_edit.setGeometry(QtCore.QRect(230, 385, 50, 30))
+        self.numberof_scan_label1 = QtWidgets.QLabel(self.centralwidget)
+        self.numberof_scan_label1.setGeometry(QtCore.QRect(285, 390, 150, 16))
         
         self.w_cal_button = QtWidgets.QPushButton(self.centralwidget)
         self.w_cal_button.setGeometry(QtCore.QRect(500, 370, 90, 30))
@@ -257,6 +261,7 @@ class Ui_mainwindow(object):
         self.I_thr_percentage_edit.textChanged[str].connect(self.auto_scaling_paremeter_change)
         self.I_thr_tolerance_edit.textChanged[str].connect(self.auto_scaling_paremeter_change)
         self.numberof_scan_edit.textChanged[str].connect(self.scan_number_change)
+        self.shutter_edit.textChanged[str].connect(self.shutter_change)
         
         signalComm.new_image.connect(self.update_image)
         signalComm.new_y0.connect(self.update_y0)
@@ -311,27 +316,6 @@ class Ui_mainwindow(object):
         self.camerawidth_label.setText(_translate("mainwindow", "IMG Width : 1280"))
         self.cameraheight_label.setText(_translate("mainwindow", "IMG Height : 800"))
         self.camerapixelsize_label.setText(_translate("mainwindow", "Pixel Size : 3 \u03BCm x 3 \u03BCm"))
-                
-        self.shutter_edit.setValidator(QtGui.QIntValidator())
-        self.anologgain_edit.setValidator(QtGui.QDoubleValidator())
-        self.digitalgain_edit.setValidator(QtGui.QDoubleValidator())
-        self.x0.setValidator(QtGui.QIntValidator())
-        self.y0.setValidator(QtGui.QIntValidator())
-        self.x1.setValidator(QtGui.QIntValidator())
-        self.y1.setValidator(QtGui.QIntValidator())
-        self.Yaxis_max.setValidator(QtGui.QIntValidator())
-        self.a0.setValidator(QtGui.QDoubleValidator())
-        self.a1.setValidator(QtGui.QDoubleValidator())
-        self.a2.setValidator(QtGui.QDoubleValidator())
-        self.a3.setValidator(QtGui.QDoubleValidator())
-        self.e0.setValidator(QtGui.QIntValidator())
-        self.e1.setValidator(QtGui.QIntValidator())
-        self.e2.setValidator(QtGui.QIntValidator())
-        self.e3.setValidator(QtGui.QIntValidator())
-        self.I_max_edit.setValidator(QtGui.QIntValidator())
-        self.I_thr_percentage_edit.setValidator(QtGui.QIntValidator())
-        self.I_thr_tolerance_edit.setValidator(QtGui.QIntValidator())
-        self.numberof_scan_edit.setValidator(QtGui.QIntValidator())
             
         self.pixel_graph.setBackground('w')
         self.pixel_graph.setLabel('left', 'Intensity')
@@ -374,8 +358,31 @@ class Ui_mainwindow(object):
         I_thr_top = I_thr + I_thr_tolerance
         I_thr_bottom = I_thr - I_thr_tolerance
         self.I_thr_tolerance_label1.setText(_translate("mainwindow", str(I_thr_top) + ' ~ ' + str(I_thr_bottom)))
+        self.I_thr_percentage_label1.setText(_translate("mainwindow", str(I_thr)))
         
         self.numberof_scan_edit.setText(numberof_scan_config)
+        self.numberof_scan_label1.setText(_translate("mainwindow", str((float(shutter) / 1000000) * float(num_scan)) + ' seconds'))
+        
+        self.shutter_edit.setValidator(QtGui.QIntValidator())
+        self.anologgain_edit.setValidator(QtGui.QDoubleValidator())
+        self.digitalgain_edit.setValidator(QtGui.QDoubleValidator())
+        self.x0.setValidator(QtGui.QIntValidator())
+        self.y0.setValidator(QtGui.QIntValidator())
+        self.x1.setValidator(QtGui.QIntValidator())
+        self.y1.setValidator(QtGui.QIntValidator())
+        self.Yaxis_max.setValidator(QtGui.QIntValidator())
+        self.a0.setValidator(QtGui.QDoubleValidator())
+        self.a1.setValidator(QtGui.QDoubleValidator())
+        self.a2.setValidator(QtGui.QDoubleValidator())
+        self.a3.setValidator(QtGui.QDoubleValidator())
+        self.e0.setValidator(QtGui.QIntValidator())
+        self.e1.setValidator(QtGui.QIntValidator())
+        self.e2.setValidator(QtGui.QIntValidator())
+        self.e3.setValidator(QtGui.QIntValidator())
+        self.I_max_edit.setValidator(QtGui.QIntValidator())
+        self.I_thr_percentage_edit.setValidator(QtGui.QIntValidator())
+        self.I_thr_tolerance_edit.setValidator(QtGui.QIntValidator())
+        self.numberof_scan_edit.setValidator(QtGui.QIntValidator())
         
     def start_clicked(self):
         global mode, flag
@@ -474,7 +481,57 @@ class Ui_mainwindow(object):
         I_thr_top = I_thr + I_thr_tolerance
         I_thr_bottom = I_thr - I_thr_tolerance
         self.I_thr_tolerance_label1.setText(_translate("mainwindow", str(I_thr_top) + '~' + str(I_thr_bottom)))
+        self.I_thr_percentage_label1.setText(_translate("mainwindow", str(I_thr)))
+        
+    def scan_number_change(self):
+        global num_scan
+        
+        num_scan = self.numberof_scan_edit.text()
+        
+        _translate = QtCore.QCoreApplication.translate
+        self.numberof_scan_label1.setText(_translate("mainwindow", str((float(shutter) / 1000000) * float(num_scan)) + ' seconds'))
+    
+    def shutter_change(self):
+        global shutter
+        
+        shutter = self.shutter_edit.text()
+        _translate = QtCore.QCoreApplication.translate
+        self.numberof_scan_label1.setText(_translate("mainwindow", str((float(shutter) / 1000000) * float(num_scan)) + ' seconds'))
+        
+    def roi_scan(self):
+        global max_value, new_y1
+        
+        try:
+            deltay = int(self.y1.text())
             
+            img = cv2.imread("./ttest/test.{}".format(self.format_box.currentText().lower()), cv2.IMREAD_GRAYSCALE)
+            a1, a2 = np.where(img == np.amax(img))
+            new_y1 = a1[0]-deltay/2
+            if new_y1 <= 0:
+                new_y1 = 0
+            signalComm.new_y0.emit()
+            
+            return 1
+        except Exception as e:
+            print('error:{}'.format(e))
+            return 0
+            
+    def draw_roi(self, img):
+        x0 = int(self.x0.text())
+        y0 = int(self.y0.text())
+        deltax = int(self.x1.text())
+        deltay = int(self.y1.text())
+        x1 = x0 + deltax
+        y1 = y0 + deltay
+        
+        roi_start_point = (x0, y0)
+        roi_end_point = (x1, y1)
+        roi_color = (255, 0 , 0) #GBR
+        thickness = 3
+        
+        img1 = cv2.rectangle(img, roi_start_point, roi_end_point, roi_color, thickness)
+        return img1
+        
     def update_data(self):
         try:
             self.pixel_graph.clear()
@@ -532,41 +589,7 @@ class Ui_mainwindow(object):
         except Exception as e:
             print('error:{}'.format(e))
             return 0
-            
-    def roi_scan(self):
-        global max_value, new_y1
-        
-        try:
-            deltay = int(self.y1.text())
-            
-            img = cv2.imread("./ttest/test.{}".format(self.format_box.currentText().lower()), cv2.IMREAD_GRAYSCALE)
-            a1, a2 = np.where(img == np.amax(img))
-            new_y1 = a1[0]-deltay/2
-            if new_y1 <= 0:
-                new_y1 = 0
-            signalComm.new_y0.emit()
-            
-            return 1
-        except Exception as e:
-            print('error:{}'.format(e))
-            return 0
-            
-    def draw_roi(self, img):
-        x0 = int(self.x0.text())
-        y0 = int(self.y0.text())
-        deltax = int(self.x1.text())
-        deltay = int(self.y1.text())
-        x1 = x0 + deltax
-        y1 = y0 + deltay
-        
-        roi_start_point = (x0, y0)
-        roi_end_point = (x1, y1)
-        roi_color = (255, 0 , 0) #GBR
-        thickness = 3
-        
-        img1 = cv2.rectangle(img, roi_start_point, roi_end_point, roi_color, thickness)
-        return img1
-                            
+                                    
     def draw_spectrum_graph_signal(self):
         try:
             signalComm.new_data.emit()
@@ -617,11 +640,6 @@ class Ui_mainwindow(object):
             print('error:{}'.format(e))
             return 0
     
-    def scan_number_change(self):
-        global num_scan
-        
-        num_scan = self.numberof_scan_edit.text()
-
 class Ui_w_calibration(object):
     def setupUi(self, w_calibration):
         w_calibration.setObjectName("w_calibration")
