@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from pyqtgraph import PlotWidget, plot
+from scipy import signal
 import sys, time, configparser
 import numpy as np
 import pyqtgraph as pg
@@ -28,11 +29,14 @@ e2 = config['wavelength_calibration']['e2']
 e1 = config['wavelength_calibration']['e1']
 e0 = config['wavelength_calibration']['e0']
 
-I_max_config = config['auto_scaling']['I_max']
-I_thr_percentage_config = config['auto_scaling']['I_thr_percentage']
-I_thr_tolerance_config = config['auto_scaling']['I_thr_tolerance']
+I_max = config['auto_scaling']['I_max']
+I_thr_percentage = config['auto_scaling']['I_thr_percentage']
+I_thr_tolerance = config['auto_scaling']['I_thr_tolerance']
 
 numberof_scan_config = config['numof_scan']['numberof_scan']
+
+w_length = config['sgfilter']['window_length']
+poly_order = config['sgfilter']['polyorder']
 
 st_max = 1000000
 ag_max = 100000000
@@ -41,9 +45,7 @@ st1 = 0
 st2 = 0
 I1 = 0
 I2 = 0
-I_max = I_max_config
-I_thr_percentage = 0
-I_thr_tolerance = 0
+
 I_thr = 0
 I_thr_top = 0
 I_thr_bottom = 0
@@ -55,10 +57,12 @@ flag = 0
 roi_mode = 0
 num_scan = numberof_scan_config
 
-wdata = []
 max_value = 0
 goal_st = 0
 new_y0 = 0
+c_draw_wgraph = 0
+
+wdata = []
 numb_ofscan = []
 ncolmean = []
 
@@ -151,38 +155,41 @@ class Ui_mainwindow(object):
         self.Yaxis_max.setGeometry(QtCore.QRect(70, 515, 50, 31))
         
         self.a3_label = QtWidgets.QLabel(self.centralwidget)
-        self.a3_label.setGeometry(QtCore.QRect(470, 220, 50, 16))
+        self.a3_label.setGeometry(QtCore.QRect(670, 220, 50, 16))
         self.a2_label = QtWidgets.QLabel(self.centralwidget)
-        self.a2_label.setGeometry(QtCore.QRect(470, 260, 50, 16))
+        self.a2_label.setGeometry(QtCore.QRect(670, 260, 50, 16))
         self.a1_label = QtWidgets.QLabel(self.centralwidget)
-        self.a1_label.setGeometry(QtCore.QRect(470, 300, 50, 16))
+        self.a1_label.setGeometry(QtCore.QRect(670, 300, 50, 16))
         self.a0_label = QtWidgets.QLabel(self.centralwidget)
-        self.a0_label.setGeometry(QtCore.QRect(470, 340, 50, 16))		
+        self.a0_label.setGeometry(QtCore.QRect(670, 340, 50, 16))		
         self.a3 = QtWidgets.QLineEdit(self.centralwidget)
-        self.a3.setGeometry(QtCore.QRect(500, 210, 80, 30))
+        self.a3.setGeometry(QtCore.QRect(700, 210, 80, 30))
         self.a2 = QtWidgets.QLineEdit(self.centralwidget)
-        self.a2.setGeometry(QtCore.QRect(500, 250, 80, 30))
+        self.a2.setGeometry(QtCore.QRect(700, 250, 80, 30))
         self.a1 = QtWidgets.QLineEdit(self.centralwidget)
-        self.a1.setGeometry(QtCore.QRect(500, 290, 80, 30))
+        self.a1.setGeometry(QtCore.QRect(700, 290, 80, 30))
         self.a0 = QtWidgets.QLineEdit(self.centralwidget)
-        self.a0.setGeometry(QtCore.QRect(500, 330, 80, 30))
+        self.a0.setGeometry(QtCore.QRect(700, 330, 80, 30))
         
         self.e3_label = QtWidgets.QLabel(self.centralwidget)
-        self.e3_label.setGeometry(QtCore.QRect(590, 220, 50, 16))
+        self.e3_label.setGeometry(QtCore.QRect(790, 220, 50, 16))
         self.e2_label = QtWidgets.QLabel(self.centralwidget)
-        self.e2_label.setGeometry(QtCore.QRect(590, 260, 50, 16))
+        self.e2_label.setGeometry(QtCore.QRect(790, 260, 50, 16))
         self.e1_label = QtWidgets.QLabel(self.centralwidget)
-        self.e1_label.setGeometry(QtCore.QRect(590, 300, 50, 16))
+        self.e1_label.setGeometry(QtCore.QRect(790, 300, 50, 16))
         self.e0_label = QtWidgets.QLabel(self.centralwidget)
-        self.e0_label.setGeometry(QtCore.QRect(590, 340, 50, 16))		
+        self.e0_label.setGeometry(QtCore.QRect(790, 340, 50, 16))		
         self.e3 = QtWidgets.QLineEdit(self.centralwidget)
-        self.e3.setGeometry(QtCore.QRect(610, 210, 50, 30))
+        self.e3.setGeometry(QtCore.QRect(810, 210, 50, 30))
         self.e2 = QtWidgets.QLineEdit(self.centralwidget)
-        self.e2.setGeometry(QtCore.QRect(610, 250, 50, 30))
+        self.e2.setGeometry(QtCore.QRect(810, 250, 50, 30))
         self.e1 = QtWidgets.QLineEdit(self.centralwidget)
-        self.e1.setGeometry(QtCore.QRect(610, 290, 50, 30))
+        self.e1.setGeometry(QtCore.QRect(810, 290, 50, 30))
         self.e0 = QtWidgets.QLineEdit(self.centralwidget)
-        self.e0.setGeometry(QtCore.QRect(610, 330, 50, 30))
+        self.e0.setGeometry(QtCore.QRect(810, 330, 50, 30))
+        
+        self.w_cal_button = QtWidgets.QPushButton(self.centralwidget)
+        self.w_cal_button.setGeometry(QtCore.QRect(670, 370, 90, 30))
         
         self.max_shutter_label = QtWidgets.QLabel(self.centralwidget)
         self.max_shutter_label.setGeometry(QtCore.QRect(330, 60, 120, 16))		
@@ -225,9 +232,6 @@ class Ui_mainwindow(object):
         self.numberof_scan_label1 = QtWidgets.QLabel(self.centralwidget)
         self.numberof_scan_label1.setGeometry(QtCore.QRect(285, 390, 150, 16))
         
-        self.w_cal_button = QtWidgets.QPushButton(self.centralwidget)
-        self.w_cal_button.setGeometry(QtCore.QRect(500, 370, 90, 30))
-        
         self.cameraspec_label = QtWidgets.QLabel(self.centralwidget)
         self.cameraspec_label.setGeometry(QtCore.QRect(800, 20, 200, 16))
         self.cameraname_label = QtWidgets.QLabel(self.centralwidget)
@@ -239,6 +243,18 @@ class Ui_mainwindow(object):
         self.camerapixelsize_label = QtWidgets.QLabel(self.centralwidget)
         self.camerapixelsize_label.setGeometry(QtCore.QRect(800, 100, 200, 16))
         
+        self.sg_filter_checkbox = QtWidgets.QCheckBox("SG Filter   ",self.centralwidget)
+        self.sg_filter_checkbox.setGeometry(QtCore.QRect(420, 220, 95, 16))
+        self.sg_filter_checkbox.setLayoutDirection(QtCore.Qt.RightToLeft)        
+        self.window_length_label = QtWidgets.QLabel(self.centralwidget)
+        self.window_length_label.setGeometry(QtCore.QRect(420, 260, 100, 16))
+        self.window_length_edit = QtWidgets.QLineEdit(self.centralwidget)
+        self.window_length_edit.setGeometry(QtCore.QRect(500, 250, 50, 30))
+        self.polyorder_label = QtWidgets.QLabel(self.centralwidget)
+        self.polyorder_label.setGeometry(QtCore.QRect(420, 300, 100, 16))
+        self.polyorder_edit = QtWidgets.QLineEdit(self.centralwidget)
+        self.polyorder_edit.setGeometry(QtCore.QRect(500, 290, 50, 30))
+        
         self.statusbar.showMessage("INITIALING")
         self.retranslateUi(mainwindow)
         QtCore.QMetaObject.connectSlotsByName(mainwindow)
@@ -249,7 +265,8 @@ class Ui_mainwindow(object):
         self.auto_roi.clicked.connect(self.auto_roi_clicked)	
         self.w_cal_button.clicked.connect(self.w_cal_button_clicked)	
         
-        self.continue_checkbox.toggled.connect(self.continue_checkbox_check)	
+        self.continue_checkbox.toggled.connect(self.continue_checkbox_check)
+        self.sg_filter_checkbox.toggled.connect(self.sg_filter_checkbox_check)
             
         self.Yaxis_max.textChanged[str].connect(self.y_axis_fix)
         self.x0.textChanged[str].connect(self.roi_change)
@@ -317,6 +334,8 @@ class Ui_mainwindow(object):
         self.camerawidth_label.setText(_translate("mainwindow", "IMG Width : 1280"))
         self.cameraheight_label.setText(_translate("mainwindow", "IMG Height : 800"))
         self.camerapixelsize_label.setText(_translate("mainwindow", "Pixel Size : 3 \u03BCm x 3 \u03BCm"))
+        self.window_length_label.setText(_translate("mainwindow", "W_Length"))
+        self.polyorder_label.setText(_translate("mainwindow", "PolyOrder"))
             
         self.pixel_graph.setBackground('w')
         self.pixel_graph.setLabel('left', 'Intensity')
@@ -348,9 +367,9 @@ class Ui_mainwindow(object):
         self.e1.setText(e1)
         self.e0.setText(e0)
         
-        self.I_max_edit.setText(I_max_config)
-        self.I_thr_percentage_edit.setText(I_thr_percentage_config)
-        self.I_thr_tolerance_edit.setText(I_thr_tolerance_config)
+        self.I_max_edit.setText(I_max)
+        self.I_thr_percentage_edit.setText(I_thr_percentage)
+        self.I_thr_tolerance_edit.setText(I_thr_tolerance)
         
         I_max = int(ui.I_max_edit.text())
         I_thr_percentage = int(ui.I_thr_percentage_edit.text())
@@ -363,6 +382,9 @@ class Ui_mainwindow(object):
         
         self.numberof_scan_edit.setText(numberof_scan_config)
         self.numberof_scan_label1.setText(_translate("mainwindow", str((float(shutter) / 1000000) * float(num_scan) + 0.5 * float(num_scan)) + ' seconds'))
+        
+        self.window_length_edit.setText(w_length)
+        self.polyorder_edit.setText(poly_order)
         
         self.shutter_edit.setValidator(QtGui.QIntValidator())
         self.anologgain_edit.setValidator(QtGui.QDoubleValidator())
@@ -384,6 +406,8 @@ class Ui_mainwindow(object):
         self.I_thr_percentage_edit.setValidator(QtGui.QIntValidator())
         self.I_thr_tolerance_edit.setValidator(QtGui.QIntValidator())
         self.numberof_scan_edit.setValidator(QtGui.QIntValidator())
+        self.window_length_edit.setValidator(QtGui.QIntValidator())
+        self.polyorder_edit.setValidator(QtGui.QIntValidator())
         
     def start_clicked(self):
         global mode, flag
@@ -453,8 +477,13 @@ class Ui_mainwindow(object):
             
     def w_cal_button_clicked(self):
         c_ui.c_graph.clear()
-        x = np.arange(1, len(data)+1)
-        c_ui.c_graph.plot(x, data)
+        x = np.arange(1, len(ncolmean)+1)
+        if self.sg_filter_checkbox.isChecked():
+            #savgol_filter(data, window length, polyorder)
+            y = signal.savgol_filter(ncolmean, int(self.window_length_edit.text()), int(self.polyorder_edit.text()))
+        else:
+            y = ncolmean
+        c_ui.c_graph.plot(x, y)
         secondwindow.show()
             
     def continue_checkbox_check(self):
@@ -464,7 +493,24 @@ class Ui_mainwindow(object):
         if ui.continue_checkbox.isChecked() == False:
             flag = 0
             self.start.setText(_translate("mainwindow", "START"))
-                        
+    
+    def sg_filter_checkbox_check(self):
+        self.draw_both_graph_signal()
+        if secondwindow.isVisible():
+            c_ui.c_graph.clear()
+            x = np.arange(1, len(ncolmean)+1)
+            if self.sg_filter_checkbox.isChecked():
+                #savgol_filter(data, window length, polyorder)
+                y = signal.savgol_filter(ncolmean, int(self.window_length_edit.text()), int(self.polyorder_edit.text()))
+            else:
+                y = ncolmean
+            c_ui.c_graph.plot(x, y)
+            
+            if c_draw_wgraph == 1:
+                check = c_ui.w_draw_wgraph()
+                if check == 0:
+                    raise Exception
+                            
     def y_axis_fix(self):
         yaxis = self.Yaxis_max.text()
         self.pixel_graph.setYRange(0, int(yaxis), padding=0)
@@ -538,7 +584,11 @@ class Ui_mainwindow(object):
         try:
             self.pixel_graph.clear()
             x = np.arange(1,len(ncolmean)+1)
-            y = ncolmean
+            if self.sg_filter_checkbox.isChecked():
+                #savgol_filter(data, window length, polyorder)
+                y = signal.savgol_filter(ncolmean, int(self.window_length_edit.text()), int(self.polyorder_edit.text()))
+            else:
+                y = ncolmean
             self.pixel_graph.plot(x, y)	
             
             return 1
@@ -550,7 +600,10 @@ class Ui_mainwindow(object):
         try:
             self.wavelength_graph.clear()
             x = wdata
-            y = ncolmean
+            if self.sg_filter_checkbox.isChecked():
+                y = signal.savgol_filter(ncolmean, int(self.window_length_edit.text()), int(self.polyorder_edit.text()))
+            else:
+                y = ncolmean
             self.wavelength_graph.plot(x, y)	
             
             return 1
@@ -647,7 +700,7 @@ class Ui_w_calibration(object):
         w_calibration.setEnabled(True)
         w_calibration.resize(560, 440)
         self.fill_in_table = QtWidgets.QTableView(w_calibration)
-        self.fill_in_table.setGeometry(QtCore.QRect(10, 10, 190, 210))
+        self.fill_in_table.setGeometry(QtCore.QRect(10, 10, 190, 250))
         self.fill_in_table.setObjectName("fill_in_table")
         self.label = QtWidgets.QLabel(w_calibration)
         self.label.setGeometry(QtCore.QRect(20, 20, 100, 16))
@@ -656,22 +709,22 @@ class Ui_w_calibration(object):
         self.label_2.setGeometry(QtCore.QRect(20, 40, 100, 16))
         self.label_2.setObjectName("label_2")
         self.label_3 = QtWidgets.QLabel(w_calibration)
-        self.label_3.setGeometry(QtCore.QRect(20, 60, 100, 16))
+        self.label_3.setGeometry(QtCore.QRect(20, 65, 100, 16))
         self.label_3.setObjectName("label_3")
         self.label_4 = QtWidgets.QLabel(w_calibration)
-        self.label_4.setGeometry(QtCore.QRect(20, 80, 100, 16))
+        self.label_4.setGeometry(QtCore.QRect(20, 90, 100, 16))
         self.label_4.setObjectName("label_4")
         self.label_5 = QtWidgets.QLabel(w_calibration)
-        self.label_5.setGeometry(QtCore.QRect(20, 100, 100, 16))
+        self.label_5.setGeometry(QtCore.QRect(20, 115, 100, 16))
         self.label_5.setObjectName("label_5")
         self.label_6 = QtWidgets.QLabel(w_calibration)
-        self.label_6.setGeometry(QtCore.QRect(20, 120, 100, 16))
+        self.label_6.setGeometry(QtCore.QRect(20, 140, 100, 16))
         self.label_6.setObjectName("label_6")
         self.label_7 = QtWidgets.QLabel(w_calibration)
-        self.label_7.setGeometry(QtCore.QRect(20, 140, 100, 16))
+        self.label_7.setGeometry(QtCore.QRect(20, 165, 100, 16))
         self.label_7.setObjectName("label_7")
         self.label_8 = QtWidgets.QLabel(w_calibration)
-        self.label_8.setGeometry(QtCore.QRect(20, 160, 100, 16))
+        self.label_8.setGeometry(QtCore.QRect(20, 190, 100, 16))
         self.label_8.setObjectName("label_8")
         self.label_9 = QtWidgets.QLabel(w_calibration)
         self.label_9.setGeometry(QtCore.QRect(70, 20, 100, 16))
@@ -680,85 +733,88 @@ class Ui_w_calibration(object):
         self.label_10.setGeometry(QtCore.QRect(70, 40, 100, 16))
         self.label_10.setObjectName("label_10")
         self.label_11 = QtWidgets.QLabel(w_calibration)
-        self.label_11.setGeometry(QtCore.QRect(70, 60, 100, 16))
+        self.label_11.setGeometry(QtCore.QRect(70, 65, 100, 16))
         self.label_11.setObjectName("label_11")
         self.label_12 = QtWidgets.QLabel(w_calibration)
-        self.label_12.setGeometry(QtCore.QRect(70, 80, 100, 16))
+        self.label_12.setGeometry(QtCore.QRect(70, 90, 100, 16))
         self.label_12.setObjectName("label_12")
         self.label_13 = QtWidgets.QLabel(w_calibration)
-        self.label_13.setGeometry(QtCore.QRect(70, 100, 100, 16))
+        self.label_13.setGeometry(QtCore.QRect(70, 115, 100, 16))
         self.label_13.setObjectName("label_13")
         self.label_14 = QtWidgets.QLabel(w_calibration)
-        self.label_14.setGeometry(QtCore.QRect(70, 120, 100, 16))
+        self.label_14.setGeometry(QtCore.QRect(70, 140, 100, 16))
         self.label_14.setObjectName("label_14")
         self.label_15 = QtWidgets.QLabel(w_calibration)
-        self.label_15.setGeometry(QtCore.QRect(70, 140, 100, 16))
+        self.label_15.setGeometry(QtCore.QRect(70, 165, 100, 16))
         self.label_15.setObjectName("label_15")
         self.label_16 = QtWidgets.QLabel(w_calibration)
-        self.label_16.setGeometry(QtCore.QRect(70, 160, 100, 16))
+        self.label_16.setGeometry(QtCore.QRect(70, 190, 100, 16))
         self.label_16.setObjectName("label_16")
-        self.lambda1 = QtWidgets.QLineEdit(w_calibration)
-        self.lambda1.setGeometry(QtCore.QRect(130, 40, 61, 16))
-        self.lambda1.setText("134")
-        self.lambda1.setObjectName("lambda1")
-        self.lambda2 = QtWidgets.QLineEdit(w_calibration)
-        self.lambda2.setGeometry(QtCore.QRect(130, 60, 61, 16))
-        self.lambda2.setText("182")
-        self.lambda2.setObjectName("lambda2")
-        self.lambda3 = QtWidgets.QLineEdit(w_calibration)
-        self.lambda3.setGeometry(QtCore.QRect(130, 80, 61, 16))
-        self.lambda3.setText("352")
-        self.lambda3.setObjectName("lambda3")
-        self.lambda4 = QtWidgets.QLineEdit(w_calibration)
-        self.lambda4.setGeometry(QtCore.QRect(130, 100, 61, 16))
-        self.lambda4.setText("581")
-        self.lambda4.setObjectName("lambda4")
-        self.lambda5 = QtWidgets.QLineEdit(w_calibration)
-        self.lambda5.setGeometry(QtCore.QRect(130, 120, 61, 16))
-        self.lambda5.setText("682")
-        self.lambda5.setObjectName("lambda5")
-        self.lambda6 = QtWidgets.QLineEdit(w_calibration)
-        self.lambda6.setGeometry(QtCore.QRect(130, 140, 61, 16))
-        self.lambda6.setText("752")
-        self.lambda6.setObjectName("lambda6")
-        self.lambda7 = QtWidgets.QLineEdit(w_calibration)
-        self.lambda7.setGeometry(QtCore.QRect(130, 160, 61, 16))
-        self.lambda7.setText("902")
-        self.lambda7.setObjectName("lambda7")
-        self.tableView = QtWidgets.QTableView(w_calibration)
-        self.tableView.setGeometry(QtCore.QRect(10, 230, 131, 101))
-        self.tableView.setObjectName("tableView")
+        self.pixel1 = QtWidgets.QLineEdit(w_calibration)
+        self.pixel1.setGeometry(QtCore.QRect(140, 40, 50, 20))
+        self.pixel1.setText("134")
+        self.pixel1.setObjectName("pixel1")
+        self.pixel2 = QtWidgets.QLineEdit(w_calibration)
+        self.pixel2.setGeometry(QtCore.QRect(140, 65, 50, 20))
+        self.pixel2.setText("182")
+        self.pixel2.setObjectName("pixel2")
+        self.pixel3 = QtWidgets.QLineEdit(w_calibration)
+        self.pixel3.setGeometry(QtCore.QRect(140, 90, 50, 20))
+        self.pixel3.setText("352")
+        self.pixel3.setObjectName("pixel3")
+        self.pixel4 = QtWidgets.QLineEdit(w_calibration)
+        self.pixel4.setGeometry(QtCore.QRect(140, 115, 50, 20))
+        self.pixel4.setText("581")
+        self.pixel4.setObjectName("pixel4")
+        self.pixel5 = QtWidgets.QLineEdit(w_calibration)
+        self.pixel5.setGeometry(QtCore.QRect(140, 140, 50, 20))
+        self.pixel5.setText("682")
+        self.pixel5.setObjectName("pixel5")
+        self.pixel6 = QtWidgets.QLineEdit(w_calibration)
+        self.pixel6.setGeometry(QtCore.QRect(140, 165, 50, 20))
+        self.pixel6.setText("752")
+        self.pixel6.setObjectName("pixel6")
+        self.pixel7 = QtWidgets.QLineEdit(w_calibration)
+        self.pixel7.setGeometry(QtCore.QRect(140, 190, 50, 20))
+        self.pixel7.setText("902")
+        self.pixel7.setObjectName("pixel7")
         self.CalButton = QtWidgets.QPushButton(w_calibration)
-        self.CalButton.setGeometry(QtCore.QRect(104, 180, 90, 30))
+        self.CalButton.setGeometry(QtCore.QRect(104, 220, 90, 30))
+        self.tableView = QtWidgets.QTableView(w_calibration)
+        self.tableView.setGeometry(QtCore.QRect(10, 270, 130, 100))
+        self.tableView.setObjectName("tableView")
         self.label_17 = QtWidgets.QLabel(w_calibration)
-        self.label_17.setGeometry(QtCore.QRect(20, 240, 21, 16))
+        self.label_17.setGeometry(QtCore.QRect(20, 275, 20, 15))
         self.label_17.setObjectName("label_17")
         self.label_18 = QtWidgets.QLabel(w_calibration)
-        self.label_18.setGeometry(QtCore.QRect(20, 260, 21, 16))
+        self.label_18.setGeometry(QtCore.QRect(20, 300, 20, 15))
         self.label_18.setObjectName("label_18")
         self.label_19 = QtWidgets.QLabel(w_calibration)
-        self.label_19.setGeometry(QtCore.QRect(20, 280, 21, 16))
+        self.label_19.setGeometry(QtCore.QRect(20, 325, 20, 15))
         self.label_19.setObjectName("label_19")
         self.label_20 = QtWidgets.QLabel(w_calibration)
-        self.label_20.setGeometry(QtCore.QRect(20, 300, 21, 16))
+        self.label_20.setGeometry(QtCore.QRect(20, 350, 20, 15))
         self.label_20.setObjectName("label_20")
         self.a3_label = QtWidgets.QLabel(w_calibration)
-        self.a3_label.setGeometry(QtCore.QRect(50, 240, 100, 12))
+        self.a3_label.setGeometry(QtCore.QRect(50, 275, 100, 15))
         self.a3_label.setObjectName("a3_label")
         self.a2_label = QtWidgets.QLabel(w_calibration)
-        self.a2_label.setGeometry(QtCore.QRect(50, 260, 100, 12))
+        self.a2_label.setGeometry(QtCore.QRect(50, 300, 100, 15))
         self.a2_label.setObjectName("a2_label")
         self.a1_label = QtWidgets.QLabel(w_calibration)
-        self.a1_label.setGeometry(QtCore.QRect(50, 280, 100, 12))
+        self.a1_label.setGeometry(QtCore.QRect(50, 325, 100, 15))
         self.a1_label.setObjectName("a1_label")
         self.a0_label = QtWidgets.QLabel(w_calibration)
-        self.a0_label.setGeometry(QtCore.QRect(50, 300, 100, 12))
+        self.a0_label.setGeometry(QtCore.QRect(50, 350, 100, 15))
         self.a0_label.setObjectName("a0_label")
         
         self.c_graph = pg.PlotWidget(w_calibration)
         self.c_graph.setGeometry(QtCore.QRect(220, 10, 300, 200))
         self.c_wavelength_graph = pg.PlotWidget(w_calibration)
         self.c_wavelength_graph.setGeometry(QtCore.QRect(220, 220, 300, 200))
+        
+        self.pixel_label = QtWidgets.QLabel(w_calibration)
+        self.pixel_label.setGeometry(QtCore.QRect(140, 20, 100, 16))
         
         self.retranslateUi(w_calibration)
         QtCore.QMetaObject.connectSlotsByName(w_calibration)
@@ -793,14 +849,15 @@ class Ui_w_calibration(object):
         self.a2_label.setText(_translate("w_calibration", "---"))
         self.a1_label.setText(_translate("w_calibration", "---"))
         self.a0_label.setText(_translate("w_calibration", "---"))
+        self.pixel_label.setText(_translate("w_calibration", "Pixel"))
         
-        self.lambda1.setValidator(QtGui.QDoubleValidator())
-        self.lambda2.setValidator(QtGui.QDoubleValidator())
-        self.lambda3.setValidator(QtGui.QDoubleValidator())
-        self.lambda4.setValidator(QtGui.QDoubleValidator())
-        self.lambda5.setValidator(QtGui.QDoubleValidator())
-        self.lambda6.setValidator(QtGui.QDoubleValidator())
-        self.lambda7.setValidator(QtGui.QDoubleValidator())
+        self.pixel1.setValidator(QtGui.QDoubleValidator())
+        self.pixel2.setValidator(QtGui.QDoubleValidator())
+        self.pixel3.setValidator(QtGui.QDoubleValidator())
+        self.pixel4.setValidator(QtGui.QDoubleValidator())
+        self.pixel5.setValidator(QtGui.QDoubleValidator())
+        self.pixel6.setValidator(QtGui.QDoubleValidator())
+        self.pixel7.setValidator(QtGui.QDoubleValidator())
         
         self.c_graph.setBackground('w')
         self.c_graph.setLabel('left', 'Intensity')
@@ -811,16 +868,17 @@ class Ui_w_calibration(object):
         self.c_wavelength_graph.setLabel('bottom', 'Wavelength')
         
     def w_cal_button_clicked(self):
+        global c_draw_wgraph
         try:
             x1 = []
             y1 = []
-            lam1 = self.lambda1.text()
-            lam2 = self.lambda2.text()
-            lam3 = self.lambda3.text()
-            lam4 = self.lambda4.text()
-            lam5 = self.lambda5.text()
-            lam6 = self.lambda6.text()
-            lam7 = self.lambda7.text()
+            lam1 = self.pixel1.text()
+            lam2 = self.pixel2.text()
+            lam3 = self.pixel3.text()
+            lam4 = self.pixel4.text()
+            lam5 = self.pixel5.text()
+            lam6 = self.pixel6.text()
+            lam7 = self.pixel7.text()
             
             l1 = self.label_10.text()
             l2 = self.label_11.text()
@@ -878,6 +936,7 @@ class Ui_w_calibration(object):
             check = self.w_draw_wgraph()
             if check != 1:
                 raise Exception
+            c_draw_wgraph = 1
             return 1
         except Exception as e:
             print('error:{}'.format(e))
@@ -887,7 +946,11 @@ class Ui_w_calibration(object):
         try:
             self.c_wavelength_graph.clear()
             x = wdata
-            y = data
+            if ui.sg_filter_checkbox.isChecked():
+                #savgol_filter(data, window length, polyorder)
+                y = signal.savgol_filter(ncolmean, int(ui.window_length_edit.text()), int(ui.polyorder_edit.text()))
+            else:
+                y = ncolmean
             self.c_wavelength_graph.plot(x, y)	
             return 1
         except Exception as e:
@@ -926,6 +989,7 @@ def crop_image():
         nImgColMean = nColMean.reshape(1, len(nColMean))
         
         data = nImgColMean[0]
+        
         a = np.argmax(data)
         max_value = data[a]
         return 1		
