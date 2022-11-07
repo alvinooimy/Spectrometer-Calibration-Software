@@ -41,7 +41,7 @@ st1 = 0
 st2 = 0
 I1 = 0
 I2 = 0
-I_max = 0
+I_max = I_max_config
 I_thr_percentage = 0
 I_thr_tolerance = 0
 I_thr = 0
@@ -53,7 +53,6 @@ auto_mode = 0
 y_mode = 0
 flag = 0
 roi_mode = 0
-image_mode = 0
 num_scan = numberof_scan_config
 
 wdata = []
@@ -397,6 +396,7 @@ class Ui_mainwindow(object):
             elif flag == 1:
                 flag = 0
                 self.start.setText(_translate("mainwindow", "START"))
+                return
         else:
             flag = 0
             mode = 10
@@ -627,8 +627,7 @@ class Ui_mainwindow(object):
     
     def update_image_signal(self):
         try:
-            if image_mode == 1:
-                signalComm.new_image.emit()
+            signalComm.new_image.emit()
             return 1
         except Exception as e:
             print('error:{}'.format(e))
@@ -973,7 +972,7 @@ def wavelength_convert():
         
 def checkluminous():
     try:
-        if (max_value > I_max):
+        if (max_value >= I_max):
             return '0'
         elif (max_value > I_thr_top):
             return '1'
@@ -989,7 +988,7 @@ def set_half_exp():
     global st1, I1
     
     try:
-        st1 = int(ui.shutter_edit.text())
+        st1 = float(ui.shutter_edit.text())
         I1 = max_value
         
         st = int(ui.shutter_edit.text())
@@ -1003,7 +1002,7 @@ def set_double_exp():
     global st1, I1
     
     try:
-        st1 = int(ui.shutter_edit.text())
+        st1 = float(ui.shutter_edit.text())
         I1 = max_value
         
         st = int(ui.shutter_edit.text())
@@ -1015,11 +1014,12 @@ def set_double_exp():
 
 def find_target_exp():
     global goal_st
+    
     try:
-        st2 = int(ui.shutter_edit.text())
+        st2 = float(ui.shutter_edit.text())
         I2 = max_value
-            
-        goal_st = int(float(st1 + ((I_thr - I1) * ((st1 - st2)/(I1 - I2)))))
+        
+        goal_st = int(st1 + ((st1 - st2)/(I1 - I2) * (I_thr - I1)))
         if goal_st > st_max:
             print("Can't calculate shutter")
             goal_st = shutter
@@ -1068,58 +1068,6 @@ def save_data():
     except Exception as e:
         print('error:{}'.format(e))
         return 0	
-        
-def find_target_exp_full(itask):
-    try:
-        st1 = int(ui.shutter_edit.text())
-        I1 = max_value
-        
-        if itask == '0':
-            return '10'
-        elif itask == '1':
-            check = set_half_exp()
-            if check != 1:
-                return 0
-        elif itask == '2':
-            return 1
-        elif itask == '3':
-            check = set_double_exp()
-            if check != 1:
-                return 0
-        else:
-            return 0
-                    
-        check = takephoto()
-        if check != 1:
-            return 0		
-        check = crop_image()
-        if check != 1:
-            return 0	
-        st2 = int(ui.shutter_edit.text())
-        I2 = max_value
-        
-        goal_st = int(float(st1 + ((I_thr - I1) * ((st1 - st2)/(I1 - I2)))))
-        if goal_st > st_max:
-            print("Can't calculate shutter")
-            return 0
-        elif goal_st < 0:
-            print("Goal Error")
-        else:
-            ui.shutter_edit.setText(str(goal_st))
-        return 1		
-    except Exception as e:
-        print('error:{}'.format(e))
-        return 0
-                                                                
-def main_prop():
-    st = ui.shutter_edit.text()
-    ag = ui.anologgain_edit.text()
-    dg = ui.digitalgain_edit.text()
-    x = ui.x0.text()
-    y = ui.y0.text()
-    deltax = ui.x1.text()
-    deltay = ui.y1.text()
-    imgformat = ui.format_box.currentText().lower()
 
 def thread_1():
     global mode, image_mode, numb_ofscan
@@ -1137,12 +1085,10 @@ def thread_1():
         elif mode == 10:
             check = takephoto()
             if check == 1:
-                image_mode = 1
-                mode = 15
-                #mode = 20
+                mode = 20
             else:
                 mode = 999
-        elif mode == 15:
+        elif mode == 20:
             if first_scan == 1:
                 if roi_mode == 0:
                     check = sum_image()
@@ -1154,15 +1100,6 @@ def thread_1():
                     mode = 30
             else:
                 mode = 30			
-        elif mode == 20:
-            if roi_mode == 0:
-                check = ui.roi_scan()
-                if check == 1:
-                    mode = 30
-                else:
-                    mode = 999
-            else:
-                mode = 30
         elif mode == 30:
             check = crop_image()
             if check == 1:
@@ -1214,8 +1151,8 @@ def thread_1():
             check = ui.draw_wavelength_graph_signal()
             if check == 1:
                 numb_ofscan.clear()
+                scan_time = 0
                 mode = 0
-                first_scan = 1
             else:
                 mode = 999
         elif mode == 999:
@@ -1228,99 +1165,86 @@ def thread_1():
 def thread_2():
     global auto_mode
     t_times = 0
+    first_scan = 1
     
     ui.statusbar.showMessage("AUTO SCALING")
     
     while True:
-        if auto_mode == 1:
+        if auto_mode == 10:
             check = takephoto()
             if check == 1:
-                auto_mode = 2
+                auto_mode = 20
             else:
                 auto_mode = 999
-        elif auto_mode == 2:
+        elif auto_mode == 20:
+            if first_scan == 1:
+                if roi_mode == 0:
+                    check = sum_image()
+                    if check == 1:
+                        auto_mode = 30
+                        first_scan = 0
+                    else:
+                        auto_mode = 999
+                else:
+                    auto_mode = 30
+            else:
+                auto_mode = 30
+        elif auto_mode == 30:
             check = crop_image()
+            if check == 1:
+                if t_times == 0:
+                    auto_mode = 40
+                else:
+                    auto_mode = 60
+            else:
+                auto_mode = 999
+        elif auto_mode == 40:
+            check = checkluminous()
+            if check == '0': # peak(max_value) > I_max
+                auto_mode = 51
+            elif check == '1': # peak(max_value) > I_thr_top
+                auto_mode = 50
+            elif check == '2': # peak(max_value) is acceptable 
+                auto_mode = 70
+            elif check == '3': # peak(max_value) < I_thr_buttom
+                auto_mode = 55
+            else:
+                auto_mode = 999
+        elif auto_mode == 50:
+            check = set_half_exp()
+            if check == 1:
+                auto_mode = 10
+                t_times = 1
+            else:
+                auto_mode = 999
+        elif auto_mode == 51:
+            check = set_half_exp()
             if check == 1:
                 auto_mode = 10
             else:
                 auto_mode = 999
-        elif auto_mode == 3:
-            check = wavelength_convert()
-            if check == 1:
-                auto_mode = 4
-            else:
-                auto_mode = 999
-        elif auto_mode == 4:
-            check = ui.draw_both_graph_signal()
-            if check == 1:
-                auto_mode = 5
-            else:
-                auto_mode = 999
-        elif auto_mode == 5:
-            check = ui.update_image_signal()
-            if check == 1:
-                #auto_mode = 6
-                break
-            else:
-                auto_mode = 999
-        elif auto_mode == 6:
-            check = save_data()
-            if check == 1:
-                break
-            else:
-                auto_mode = 999
-        elif auto_mode == 10:
-            check = checkluminous()
-            if check == '0':
-                auto_mode = 20
-            elif check == '1':
-                auto_mode = 30
-            elif check == '2':
-                if t_times != 0:
-                    auto_mode = 3
-                else:
-                    break
-            elif check == '3':
-                auto_mode = 40
-            else:
-                auto_mode = 999
-            t_times = 1
-        elif auto_mode == 20:
-            print("Spectrum Error")
-            break
-        elif auto_mode == 30:
-            check = set_half_exp()
-            if check == 1:
-                auto_mode = 50
-            else:
-                auto_mode = 999
-        elif auto_mode == 40:
+        elif auto_mode == 55:
             check = set_double_exp()
             if check == 1:
-                auto_mode = 50
+                auto_mode = 10
+                t_times = 1
             else:
                 auto_mode = 999
-        elif auto_mode == 50:
-            check = takephoto()
-            if check == 1:
-                auto_mode = 51
-            else:
-                auto_mode = 999
-        elif auto_mode == 51:
-            check = crop_image()
-            if check == 1:
-                auto_mode = 52
-            else:
-                auto_mode = 999
-        elif auto_mode == 52:
+        elif auto_mode == 60:
             check = find_target_exp()
             if check == 1:
-                auto_mode = 1
+                auto_mode = 70
+                t_times = 0
             else:
                 auto_mode = 999
-        elif auto_mode == 100:
-            itask = checkluminous()
-            check = find_target_exp_full(itask)
+        elif auto_mode == 70:
+            check = ui.draw_spectrum_graph_signal()
+            if check == 1:
+                auto_mode = 80
+            else:
+                auto_mode = 999
+        elif auto_mode == 80:
+            check = ui.update_image_signal()
             if check == 1:
                 break
             else:
