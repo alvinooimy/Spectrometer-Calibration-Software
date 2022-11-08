@@ -1,10 +1,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from pyqtgraph import PlotWidget, plot
 from scipy import signal
-import sys, time, configparser
 import numpy as np
 import pyqtgraph as pg
-import cv2, threading, subprocess
+import sys, configparser, cv2, threading, subprocess
 
 np.set_printoptions(threshold = sys.maxsize)
 
@@ -381,7 +379,7 @@ class Ui_mainwindow(object):
         self.I_thr_percentage_label1.setText(_translate("mainwindow", str(I_thr)))
         
         self.numberof_scan_edit.setText(numberof_scan_config)
-        self.numberof_scan_label1.setText(_translate("mainwindow", str((float(shutter) / 1000000) * float(num_scan) + 0.5 * float(num_scan)) + ' seconds'))
+        self.numberof_scan_label1.setText(_translate("mainwindow", str(((float(shutter) / 1000) * float(num_scan) + 500 * float(num_scan)) / 1000 ) + ' seconds'))
         
         self.window_length_edit.setText(w_length)
         self.polyorder_edit.setText(poly_order)
@@ -537,14 +535,14 @@ class Ui_mainwindow(object):
         num_scan = self.numberof_scan_edit.text()
         
         _translate = QtCore.QCoreApplication.translate
-        self.numberof_scan_label1.setText(_translate("mainwindow", str((float(shutter) / 1000000) * float(num_scan) + 0.5 * float(num_scan)) + ' seconds'))
+        self.numberof_scan_label1.setText(_translate("mainwindow", str(((float(shutter) / 1000) * float(num_scan) + 500 * float(num_scan)) / 1000 ) + ' seconds'))
     
     def shutter_change(self):
         global shutter
         
         shutter = self.shutter_edit.text()
         _translate = QtCore.QCoreApplication.translate
-        self.numberof_scan_label1.setText(_translate("mainwindow", str((float(shutter) / 1000000) * float(num_scan) + 0.5 * float(num_scan)) + ' seconds'))
+        self.numberof_scan_label1.setText(_translate("mainwindow", str(((float(shutter) / 1000) * float(num_scan) + 500 * float(num_scan)) / 1000 ) + ' seconds'))
         
     def roi_scan(self):
         global max_value, new_y1
@@ -589,7 +587,7 @@ class Ui_mainwindow(object):
                 y = signal.savgol_filter(ncolmean, int(self.window_length_edit.text()), int(self.polyorder_edit.text()))
             else:
                 y = ncolmean
-            self.pixel_graph.plot(x, y)	
+            self.pixel_graph.plot(x, y, pen=pg.mkPen('k'))	# k = black
             
             return 1
         except Exception as e:
@@ -604,7 +602,7 @@ class Ui_mainwindow(object):
                 y = signal.savgol_filter(ncolmean, int(self.window_length_edit.text()), int(self.polyorder_edit.text()))
             else:
                 y = ncolmean
-            self.wavelength_graph.plot(x, y)	
+            self.wavelength_graph.plot(x, y, pen=pg.mkPen('k'))	# k = black
             
             return 1
         except Exception as e:
