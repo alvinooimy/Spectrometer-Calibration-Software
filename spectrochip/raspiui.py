@@ -1295,7 +1295,7 @@ def thread_2():
         elif auto_mode == 60:
             check = find_target_exp()
             if check == 1:
-                auto_mode = 70
+                auto_mode = 10
                 t_times = 0
             else:
                 auto_mode = 999
@@ -1333,4 +1333,3 @@ if __name__ == "__main__":
     except Exception as ex:
         print(ex)
         exit()
-    
