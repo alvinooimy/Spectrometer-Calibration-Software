@@ -276,6 +276,8 @@ class Ui_mainwindow(object):
         self.I_thr_tolerance_edit.textChanged[str].connect(self.auto_scaling_paremeter_change)
         self.numberof_scan_edit.textChanged[str].connect(self.scan_number_change)
         self.shutter_edit.textChanged[str].connect(self.shutter_change)
+        self.window_length_edit.textChanged[str].connect(self.sg_change)
+        self.polyorder_edit.textChanged[str].connect(self.sg_change)
         
         signalComm.new_image.connect(self.update_image)
         signalComm.new_y0.connect(self.update_y0)
@@ -543,7 +545,10 @@ class Ui_mainwindow(object):
         shutter = self.shutter_edit.text()
         _translate = QtCore.QCoreApplication.translate
         self.numberof_scan_label1.setText(_translate("mainwindow", str(((float(shutter) / 1000) * float(num_scan) + 500 * float(num_scan)) / 1000 ) + ' seconds'))
-        
+    
+    def sg_change(self):
+        self.draw_both_graph_signal()
+            
     def roi_scan(self):
         global max_value, new_y1
         
