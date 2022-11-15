@@ -836,8 +836,8 @@ class Ui_w_calibration(object):
         self.pixel_label = QtWidgets.QLabel(w_calibration)
         self.pixel_label.setGeometry(QtCore.QRect(140, 20, 100, 16))
         
-        self.ar_autopeak_checkbox = QtWidgets.QCheckBox("Ar Find Peak   ",w_calibration)
-        self.ar_autopeak_checkbox.setGeometry(QtCore.QRect(10, 440, 120, 16))
+        self.ar_autopeak_checkbox = QtWidgets.QCheckBox("Hg-Ar Find Peak   ",w_calibration)
+        self.ar_autopeak_checkbox.setGeometry(QtCore.QRect(10, 440, 140, 16))
         self.ar_autopeak_checkbox.setLayoutDirection(QtCore.Qt.LeftToRight)       
         self.ar_autofindpeak_btn = QtWidgets.QPushButton(w_calibration)
         self.ar_autofindpeak_btn.setGeometry(QtCore.QRect(10, 460, 90, 30))
