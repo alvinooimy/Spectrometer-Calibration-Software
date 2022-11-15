@@ -947,7 +947,6 @@ class Ui_w_calibration(object):
             x1.append(float(lam5))
             x1.append(float(lam6))
             x1.append(float(lam7))
-            x1.append(0)
             
             y1.append(float(l1))
             y1.append(float(l2))
@@ -956,13 +955,12 @@ class Ui_w_calibration(object):
             y1.append(float(l5))
             y1.append(float(l6))
             y1.append(float(l7))
-            y1.append(0)
             
             z1 = np.polyfit(x1, y1, 3)
             p0 = []
             for i in range(len(z1)):
                 e = str(z1[i]).find('e')
-                print(z1[i])
+                
                 if e > 0:
                     p0.extend([float(str(z1[i])[:e:]),int(str(z1[i])[e+1::])])
                 else:
