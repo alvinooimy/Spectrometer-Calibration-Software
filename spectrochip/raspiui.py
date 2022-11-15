@@ -295,12 +295,6 @@ class Ui_mainwindow(object):
         signalComm.new_wdata.connect(self.update_wdata)
         signalComm.new_goal_st.connect(self.update_st)
         
-        self.x0.setEnabled(False)
-        self.y0.setEnabled(False)
-        self.x1.setEnabled(False)
-        self.Yaxis_max.setEnabled(False)
-        self.w_cal_button.setEnabled(False)
-        
         self.statusbar.showMessage("DONE")
                 
     def retranslateUi(self, mainwindow):
@@ -418,6 +412,12 @@ class Ui_mainwindow(object):
         self.numberof_scan_edit.setValidator(QtGui.QIntValidator())
         self.window_length_edit.setValidator(QtGui.QIntValidator())
         self.polyorder_edit.setValidator(QtGui.QIntValidator())
+        
+        self.x0.setEnabled(False)
+        self.y0.setEnabled(False)
+        self.x1.setEnabled(False)
+        self.Yaxis_max.setEnabled(False)
+        self.w_cal_button.setEnabled(False)
         
     def start_clicked(self):
         global mode, flag
@@ -711,7 +711,7 @@ class Ui_w_calibration(object):
     def setupUi(self, w_calibration):
         w_calibration.setObjectName("w_calibration")
         w_calibration.setEnabled(True)
-        w_calibration.resize(560, 440)
+        w_calibration.resize(560, 500)
         self.fill_in_table = QtWidgets.QTableView(w_calibration)
         self.fill_in_table.setGeometry(QtCore.QRect(10, 10, 190, 315))
         self.fill_in_table.setObjectName("fill_in_table")
@@ -836,10 +836,19 @@ class Ui_w_calibration(object):
         self.pixel_label = QtWidgets.QLabel(w_calibration)
         self.pixel_label.setGeometry(QtCore.QRect(140, 20, 100, 16))
         
+        self.ar_autopeak_checkbox = QtWidgets.QCheckBox("Ar Find Peak   ",w_calibration)
+        self.ar_autopeak_checkbox.setGeometry(QtCore.QRect(10, 440, 120, 16))
+        self.ar_autopeak_checkbox.setLayoutDirection(QtCore.Qt.LeftToRight)       
+        self.ar_autofindpeak_btn = QtWidgets.QPushButton(w_calibration)
+        self.ar_autofindpeak_btn.setGeometry(QtCore.QRect(10, 460, 90, 30))
+        
         self.retranslateUi(w_calibration)
         QtCore.QMetaObject.connectSlotsByName(w_calibration)
         
         self.CalButton.clicked.connect(self.w_cal_button_clicked)
+        self.ar_autofindpeak_btn.clicked.connect(self.ar_autofindpeak_btn_clicked)
+        
+        self.ar_autopeak_checkbox.toggled.connect(self.ar_autopeak_checkbox_check)
 
     def retranslateUi(self, w_calibration):
         _translate = QtCore.QCoreApplication.translate
@@ -866,6 +875,7 @@ class Ui_w_calibration(object):
         self.label_10.setText(_translate("w_calibration", "8"))
         self.label_11.setText(_translate("w_calibration", "9"))
         self.label_12.setText(_translate("w_calibration", "10"))
+        self.ar_autofindpeak_btn.setText(_translate("w_calibration", "AUTO FIND"))
         
         self.lambda1.setText(config['calibration_peak']['lamdba1'])
         self.lambda2.setText(config['calibration_peak']['lamdba2'])
@@ -918,6 +928,8 @@ class Ui_w_calibration(object):
         self.c_wavelength_graph.setBackground('w')
         self.c_wavelength_graph.setLabel('left', 'Intensity')
         self.c_wavelength_graph.setLabel('bottom', 'Wavelength')
+        
+        self.ar_autofindpeak_btn.setEnabled(False)
         
     def w_cal_button_clicked(self):
         global c_draw_wgraph
@@ -1035,7 +1047,18 @@ class Ui_w_calibration(object):
         except Exception as e:
             print('error:{}'.format(e))
             return 0
-                
+    
+    def ar_autopeak_checkbox_check(self):
+        if self.ar_autopeak_checkbox.isChecked() == True:
+            self.ar_autofindpeak_btn.setEnabled(True)
+        else:
+            self.ar_autofindpeak_btn.setEnabled(False)
+    
+    def ar_autofindpeak_btn_clicked(self):
+        thread3 = threading.Thread(target = thread_3)
+        thread3.daemon = True
+        thread3.start()
+                        
 def takephoto():
     try:
         shutter = ui.shutter_edit.text()
@@ -1251,7 +1274,7 @@ def find_hgar_dividerpoint():
 
         hg_data = y_smooth[:hg_max]
         ar_data = y_smooth[hg_max:]
-        
+
         return 1
     except Exception as e:
         print("Error line: {}\nError: {}".format(e.__traceback__.tb_lineno, e))
