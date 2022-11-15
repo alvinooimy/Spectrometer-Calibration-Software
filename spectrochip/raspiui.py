@@ -64,6 +64,16 @@ wdata = []
 numb_ofscan = []
 ncolmean = []
 
+hg_max = 0
+centerline_height = []
+hg_data = []
+hg_peak = []
+hg_peaks = []
+ar_data = []
+ar_peak = []
+ar_peaks = []
+dist = 0
+
 class SignalCommunication(QtCore.QObject):
     new_image = QtCore.pyqtSignal()
     new_y0 = QtCore.pyqtSignal()
@@ -703,7 +713,7 @@ class Ui_w_calibration(object):
         w_calibration.setEnabled(True)
         w_calibration.resize(560, 440)
         self.fill_in_table = QtWidgets.QTableView(w_calibration)
-        self.fill_in_table.setGeometry(QtCore.QRect(10, 10, 190, 250))
+        self.fill_in_table.setGeometry(QtCore.QRect(10, 10, 190, 315))
         self.fill_in_table.setObjectName("fill_in_table")
         self.label = QtWidgets.QLabel(w_calibration)
         self.label.setGeometry(QtCore.QRect(20, 20, 100, 16))
@@ -733,82 +743,89 @@ class Ui_w_calibration(object):
         self.label_9.setGeometry(QtCore.QRect(70, 20, 100, 16))
         self.label_9.setObjectName("label_9")
         self.label_10 = QtWidgets.QLabel(w_calibration)
-        self.label_10.setGeometry(QtCore.QRect(70, 40, 100, 16))
-        self.label_10.setObjectName("label_10")
+        self.label_10.setGeometry(QtCore.QRect(20, 215, 100, 16))
         self.label_11 = QtWidgets.QLabel(w_calibration)
-        self.label_11.setGeometry(QtCore.QRect(70, 65, 100, 16))
-        self.label_11.setObjectName("label_11")
+        self.label_11.setGeometry(QtCore.QRect(20, 240, 100, 16))
         self.label_12 = QtWidgets.QLabel(w_calibration)
-        self.label_12.setGeometry(QtCore.QRect(70, 90, 100, 16))
-        self.label_12.setObjectName("label_12")
-        self.label_13 = QtWidgets.QLabel(w_calibration)
-        self.label_13.setGeometry(QtCore.QRect(70, 115, 100, 16))
-        self.label_13.setObjectName("label_13")
-        self.label_14 = QtWidgets.QLabel(w_calibration)
-        self.label_14.setGeometry(QtCore.QRect(70, 140, 100, 16))
-        self.label_14.setObjectName("label_14")
-        self.label_15 = QtWidgets.QLabel(w_calibration)
-        self.label_15.setGeometry(QtCore.QRect(70, 165, 100, 16))
-        self.label_15.setObjectName("label_15")
-        self.label_16 = QtWidgets.QLabel(w_calibration)
-        self.label_16.setGeometry(QtCore.QRect(70, 190, 100, 16))
-        self.label_16.setObjectName("label_16")
+        self.label_12.setGeometry(QtCore.QRect(20, 265, 100, 16))
+        
+        self.lambda1 = QtWidgets.QLineEdit(w_calibration)
+        self.lambda1.setGeometry(QtCore.QRect(60, 40, 70, 20))
+        self.lambda2 = QtWidgets.QLineEdit(w_calibration)
+        self.lambda2.setGeometry(QtCore.QRect(60, 65, 70, 20))
+        self.lambda3 = QtWidgets.QLineEdit(w_calibration)
+        self.lambda3.setGeometry(QtCore.QRect(60, 90, 70, 20))
+        self.lambda4 = QtWidgets.QLineEdit(w_calibration)
+        self.lambda4.setGeometry(QtCore.QRect(60, 115, 70, 20))
+        self.lambda5 = QtWidgets.QLineEdit(w_calibration)
+        self.lambda5.setGeometry(QtCore.QRect(60, 140, 70, 20))
+        self.lambda6 = QtWidgets.QLineEdit(w_calibration)
+        self.lambda6.setGeometry(QtCore.QRect(60, 165, 70, 20))
+        self.lambda7 = QtWidgets.QLineEdit(w_calibration)
+        self.lambda7.setGeometry(QtCore.QRect(60, 190, 70, 20))
+        self.lambda8 = QtWidgets.QLineEdit(w_calibration)
+        self.lambda8.setGeometry(QtCore.QRect(60, 215, 70, 20))
+        self.lambda9 = QtWidgets.QLineEdit(w_calibration)
+        self.lambda9.setGeometry(QtCore.QRect(60, 240, 70, 20))
+        self.lambda10 = QtWidgets.QLineEdit(w_calibration)
+        self.lambda10.setGeometry(QtCore.QRect(60, 265, 70, 20))
+        
         self.pixel1 = QtWidgets.QLineEdit(w_calibration)
         self.pixel1.setGeometry(QtCore.QRect(140, 40, 50, 20))
-        self.pixel1.setText("134")
         self.pixel1.setObjectName("pixel1")
         self.pixel2 = QtWidgets.QLineEdit(w_calibration)
         self.pixel2.setGeometry(QtCore.QRect(140, 65, 50, 20))
-        self.pixel2.setText("182")
         self.pixel2.setObjectName("pixel2")
         self.pixel3 = QtWidgets.QLineEdit(w_calibration)
         self.pixel3.setGeometry(QtCore.QRect(140, 90, 50, 20))
-        self.pixel3.setText("352")
         self.pixel3.setObjectName("pixel3")
         self.pixel4 = QtWidgets.QLineEdit(w_calibration)
         self.pixel4.setGeometry(QtCore.QRect(140, 115, 50, 20))
-        self.pixel4.setText("581")
         self.pixel4.setObjectName("pixel4")
         self.pixel5 = QtWidgets.QLineEdit(w_calibration)
         self.pixel5.setGeometry(QtCore.QRect(140, 140, 50, 20))
-        self.pixel5.setText("682")
         self.pixel5.setObjectName("pixel5")
         self.pixel6 = QtWidgets.QLineEdit(w_calibration)
         self.pixel6.setGeometry(QtCore.QRect(140, 165, 50, 20))
-        self.pixel6.setText("752")
         self.pixel6.setObjectName("pixel6")
         self.pixel7 = QtWidgets.QLineEdit(w_calibration)
         self.pixel7.setGeometry(QtCore.QRect(140, 190, 50, 20))
-        self.pixel7.setText("902")
         self.pixel7.setObjectName("pixel7")
+        self.pixel8 = QtWidgets.QLineEdit(w_calibration)
+        self.pixel8.setGeometry(QtCore.QRect(140, 215, 50, 20))
+        self.pixel9 = QtWidgets.QLineEdit(w_calibration)
+        self.pixel9.setGeometry(QtCore.QRect(140, 240, 50, 20))
+        self.pixel10 = QtWidgets.QLineEdit(w_calibration)
+        self.pixel10.setGeometry(QtCore.QRect(140, 265, 50, 20))
+        
         self.CalButton = QtWidgets.QPushButton(w_calibration)
-        self.CalButton.setGeometry(QtCore.QRect(104, 220, 90, 30))
+        self.CalButton.setGeometry(QtCore.QRect(104, 290, 90, 30))
         self.tableView = QtWidgets.QTableView(w_calibration)
-        self.tableView.setGeometry(QtCore.QRect(10, 270, 130, 100))
+        self.tableView.setGeometry(QtCore.QRect(10, 330, 130, 100))
         self.tableView.setObjectName("tableView")
         self.label_17 = QtWidgets.QLabel(w_calibration)
-        self.label_17.setGeometry(QtCore.QRect(20, 275, 20, 15))
+        self.label_17.setGeometry(QtCore.QRect(20, 335, 20, 15))
         self.label_17.setObjectName("label_17")
         self.label_18 = QtWidgets.QLabel(w_calibration)
-        self.label_18.setGeometry(QtCore.QRect(20, 300, 20, 15))
+        self.label_18.setGeometry(QtCore.QRect(20, 360, 20, 15))
         self.label_18.setObjectName("label_18")
         self.label_19 = QtWidgets.QLabel(w_calibration)
-        self.label_19.setGeometry(QtCore.QRect(20, 325, 20, 15))
+        self.label_19.setGeometry(QtCore.QRect(20, 385, 20, 15))
         self.label_19.setObjectName("label_19")
         self.label_20 = QtWidgets.QLabel(w_calibration)
-        self.label_20.setGeometry(QtCore.QRect(20, 350, 20, 15))
+        self.label_20.setGeometry(QtCore.QRect(20, 410, 20, 15))
         self.label_20.setObjectName("label_20")
         self.a3_label = QtWidgets.QLabel(w_calibration)
-        self.a3_label.setGeometry(QtCore.QRect(50, 275, 100, 15))
+        self.a3_label.setGeometry(QtCore.QRect(50, 335, 100, 15))
         self.a3_label.setObjectName("a3_label")
         self.a2_label = QtWidgets.QLabel(w_calibration)
-        self.a2_label.setGeometry(QtCore.QRect(50, 300, 100, 15))
+        self.a2_label.setGeometry(QtCore.QRect(50, 360, 100, 15))
         self.a2_label.setObjectName("a2_label")
         self.a1_label = QtWidgets.QLabel(w_calibration)
-        self.a1_label.setGeometry(QtCore.QRect(50, 325, 100, 15))
+        self.a1_label.setGeometry(QtCore.QRect(50, 385, 100, 15))
         self.a1_label.setObjectName("a1_label")
         self.a0_label = QtWidgets.QLabel(w_calibration)
-        self.a0_label.setGeometry(QtCore.QRect(50, 350, 100, 15))
+        self.a0_label.setGeometry(QtCore.QRect(50, 410, 100, 15))
         self.a0_label.setObjectName("a0_label")
         
         self.c_graph = pg.PlotWidget(w_calibration)
@@ -836,13 +853,6 @@ class Ui_w_calibration(object):
         self.label_7.setText(_translate("w_calibration", "6"))
         self.label_8.setText(_translate("w_calibration", "7"))
         self.label_9.setText(_translate("w_calibration", "Lambda"))
-        self.label_10.setText(_translate("w_calibration", "404.656"))
-        self.label_11.setText(_translate("w_calibration", "435.833"))
-        self.label_12.setText(_translate("w_calibration", "546.074"))
-        self.label_13.setText(_translate("w_calibration", "696.543"))
-        self.label_14.setText(_translate("w_calibration", "763.511"))
-        self.label_15.setText(_translate("w_calibration", "811.531"))
-        self.label_16.setText(_translate("w_calibration", "912.297"))
         self.CalButton.setText(_translate("w_calibration", "CALCULATE"))
         self.label_17.setText(_translate("w_calibration", "a3"))
         self.label_18.setText(_translate("w_calibration", "a2"))
@@ -853,6 +863,42 @@ class Ui_w_calibration(object):
         self.a1_label.setText(_translate("w_calibration", "---"))
         self.a0_label.setText(_translate("w_calibration", "---"))
         self.pixel_label.setText(_translate("w_calibration", "Pixel"))
+        self.label_10.setText(_translate("w_calibration", "8"))
+        self.label_11.setText(_translate("w_calibration", "9"))
+        self.label_12.setText(_translate("w_calibration", "10"))
+        
+        self.lambda1.setText(config['calibration_peak']['lamdba1'])
+        self.lambda2.setText(config['calibration_peak']['lamdba2'])
+        self.lambda3.setText(config['calibration_peak']['lamdba3'])
+        self.lambda4.setText(config['calibration_peak']['lamdba4'])
+        self.lambda5.setText(config['calibration_peak']['lamdba5'])
+        self.lambda6.setText(config['calibration_peak']['lamdba6'])
+        self.lambda7.setText(config['calibration_peak']['lamdba7'])
+        self.lambda8.setText(config['calibration_peak']['lamdba8'])
+        self.lambda9.setText(config['calibration_peak']['lamdba9'])
+        self.lambda10.setText(config['calibration_peak']['lamdba10'])
+        
+        self.pixel1.setText(config['calibration_peak']['pixel1'])
+        self.pixel2.setText(config['calibration_peak']['pixel2'])
+        self.pixel3.setText(config['calibration_peak']['pixel3'])
+        self.pixel4.setText(config['calibration_peak']['pixel4'])
+        self.pixel5.setText(config['calibration_peak']['pixel5'])
+        self.pixel6.setText(config['calibration_peak']['pixel6'])
+        self.pixel7.setText(config['calibration_peak']['pixel7'])
+        self.pixel8.setText(config['calibration_peak']['pixel8'])
+        self.pixel9.setText(config['calibration_peak']['pixel9'])
+        self.pixel10.setText(config['calibration_peak']['pixel10'])
+        
+        self.lambda1.setValidator(QtGui.QDoubleValidator())
+        self.lambda2.setValidator(QtGui.QDoubleValidator())
+        self.lambda3.setValidator(QtGui.QDoubleValidator())
+        self.lambda4.setValidator(QtGui.QDoubleValidator())
+        self.lambda5.setValidator(QtGui.QDoubleValidator())
+        self.lambda6.setValidator(QtGui.QDoubleValidator())
+        self.lambda7.setValidator(QtGui.QDoubleValidator())
+        self.lambda8.setValidator(QtGui.QDoubleValidator())
+        self.lambda9.setValidator(QtGui.QDoubleValidator())
+        self.lambda10.setValidator(QtGui.QDoubleValidator())
         
         self.pixel1.setValidator(QtGui.QDoubleValidator())
         self.pixel2.setValidator(QtGui.QDoubleValidator())
@@ -861,6 +907,9 @@ class Ui_w_calibration(object):
         self.pixel5.setValidator(QtGui.QDoubleValidator())
         self.pixel6.setValidator(QtGui.QDoubleValidator())
         self.pixel7.setValidator(QtGui.QDoubleValidator())
+        self.pixel8.setValidator(QtGui.QDoubleValidator())
+        self.pixel9.setValidator(QtGui.QDoubleValidator())
+        self.pixel10.setValidator(QtGui.QDoubleValidator())
         
         self.c_graph.setBackground('w')
         self.c_graph.setLabel('left', 'Intensity')
@@ -883,13 +932,13 @@ class Ui_w_calibration(object):
             lam6 = self.pixel6.text()
             lam7 = self.pixel7.text()
             
-            l1 = self.label_10.text()
-            l2 = self.label_11.text()
-            l3 = self.label_12.text()
-            l4 = self.label_13.text()
-            l5 = self.label_14.text()
-            l6 = self.label_15.text()
-            l7 = self.label_16.text()
+            l1 = self.lambda1.text()
+            l2 = self.lambda2.text()
+            l3 = self.lambda3.text()
+            l4 = self.lambda4.text()
+            l5 = self.lambda5.text()
+            l6 = self.lambda6.text()
+            l7 = self.lambda7.text()
             
             x1.append(float(lam1))
             x1.append(float(lam2))
@@ -898,6 +947,7 @@ class Ui_w_calibration(object):
             x1.append(float(lam5))
             x1.append(float(lam6))
             x1.append(float(lam7))
+            x1.append(0)
             
             y1.append(float(l1))
             y1.append(float(l2))
@@ -906,30 +956,58 @@ class Ui_w_calibration(object):
             y1.append(float(l5))
             y1.append(float(l6))
             y1.append(float(l7))
+            y1.append(0)
             
             z1 = np.polyfit(x1, y1, 3)
             p0 = []
             for i in range(len(z1)):
                 e = str(z1[i]).find('e')
+                print(z1[i])
                 if e > 0:
                     p0.extend([float(str(z1[i])[:e:]),int(str(z1[i])[e+1::])])
                 else:
                     p0.append(float(str(z1[i])[:e:]))
                     
             _translate = QtCore.QCoreApplication.translate
-            self.a3_label.setText(_translate("w_calibration", (str(np.around(p0[0],3)))+'e'+str(p0[1])))
-            self.a2_label.setText(_translate("w_calibration", (str(np.around(p0[2],3)))+'e'+str(p0[3])))
-            self.a1_label.setText(_translate("w_calibration", str(np.around(p0[4],3))))
-            self.a0_label.setText(_translate("w_calibration", str(np.around(p0[5],3))))
-            ui.a3.setText(str(np.around(p0[0],3)))
-            ui.a2.setText(str(np.around(p0[2],3)))
-            ui.a1.setText(str(np.around(p0[4],3)))
-            ui.a0.setText(str(np.around(p0[5],3)))
-            ui.e3.setText(str(p0[1]))
-            ui.e2.setText(str(p0[3]))
-            ui.e1.setText('0')
-            ui.e0.setText('0')
-            
+            check_numb = 0
+            if isinstance(p0[check_numb + 1],int):
+                self.a3_label.setText(_translate("w_calibration", (str(np.around(p0[check_numb],3)))+'e'+str(p0[check_numb+1])))
+                ui.a3.setText(str(np.around(p0[check_numb],3)))
+                ui.e3.setText(str(p0[check_numb+1]))
+                check_numb += 2
+            else:
+                self.a3_label.setText(_translate("w_calibration", (str(np.around(p0[check_numb],3)))))
+                ui.a3.setText(str(np.around(p0[check_numb],3)))
+                check_numb += 1
+                
+            if isinstance(p0[check_numb + 1],int):
+                self.a2_label.setText(_translate("w_calibration", (str(np.around(p0[check_numb],3)))+'e'+str(p0[check_numb+1])))
+                ui.a2.setText(str(np.around(p0[check_numb],3)))
+                ui.e2.setText(str(p0[check_numb+1]))
+                check_numb += 2
+            else:
+                self.a2_label.setText(_translate("w_calibration", (str(np.around(p0[check_numb],3)))))
+                ui.a2.setText(str(np.around(p0[check_numb],3)))
+                check_numb += 1
+                
+            if isinstance(p0[check_numb + 1],int):
+                self.a1_label.setText(_translate("w_calibration", (str(np.around(p0[check_numb],3)))+'e'+str(p0[check_numb+1])))
+                ui.a1.setText(str(np.around(p0[check_numb],3)))
+                ui.e1.setText(p0[check_numb+1])
+                check_numb += 2
+            else:
+                self.a1_label.setText(_translate("w_calibration", (str(np.around(p0[check_numb],3)))))
+                ui.a1.setText(str(np.around(p0[check_numb],3)))
+                check_numb += 1
+                
+            if len(p0) != check_numb+1:
+                self.a0_label.setText(_translate("w_calibration", str(np.around(p0[check_numb],3))+'e'+str(p0[check_numb+1])))
+                ui.a0.setText(str(np.around(p0[check_numb],3)))
+                ui.e0.setText(p0[check_numb+1])
+            else:
+                self.a0_label.setText(_translate("w_calibration", str(np.around(p0[check_numb],3))))
+                ui.a0.setText(str(np.around(p0[check_numb],3)))
+          
             check = wavelength_convert()
             if check != 1:
                 raise Exception
@@ -959,7 +1037,7 @@ class Ui_w_calibration(object):
         except Exception as e:
             print('error:{}'.format(e))
             return 0
-            
+                
 def takephoto():
     try:
         shutter = ui.shutter_edit.text()
@@ -1136,6 +1214,128 @@ def save_data():
         print('error:{}'.format(e))
         return 0	
 
+def find_hgar_dividerpoint():
+    try:
+        global hg_max, hg_data, hg_peak, ar_data, ar_peak, centerline_height, dist
+        
+        yData = ncolmean
+        
+        y_smooth = signal.savgol_filter(yData, window_length = 21, polyorder = 3)
+
+        peaks, _ = signal.find_peaks(y_smooth, height = 0)
+        p_peaks = y_smooth[peaks]
+        p_peaks = p_peaks.tolist()
+
+        p_peaksmax_index1 = p_peaks.index(max(p_peaks))
+        p_peaksmax1 = peaks[p_peaksmax_index1]
+        p_peaks.pop(p_peaksmax_index1)
+
+        p_peaksmax_index2 = p_peaks.index(max(p_peaks))
+        p_peaksmax2 = peaks[p_peaksmax_index2]
+
+        if p_peaksmax1 > p_peaksmax2:
+            dist = p_peaksmax1 - p_peaksmax2
+            hg_max = p_peaksmax1 + dist
+        elif p_peaksmax1 < p_peaksmax2:
+            p_peaksmax2 = peaks[p_peaksmax_index2 + 1]
+            dist = p_peaksmax2 - p_peaksmax1
+            hg_max = p_peaksmax2 + dist
+
+        centerline_height = int(yData[p_peaksmax1]) + 1
+        centerlinex = [hg_max] * centerline_height    
+        centerliney = np.arange(0,centerline_height)    
+
+        for i in peaks:
+            if i < hg_max:
+                hg_peak.append(i)
+            else:
+                ar_peak.append(i-hg_max)
+
+        hg_data = y_smooth[:hg_max]
+        ar_data = y_smooth[hg_max:]
+        
+        return 1
+    except Exception as e:
+        print("Error line: {}\nError: {}".format(e.__traceback__.tb_lineno, e))
+        return 0
+
+def find_hg_peaks():
+    try:
+        global hg_peaks
+        
+        hg_pdata = hg_data[hg_peak].tolist()
+        hg_peak1 = []
+        while len(hg_peak1) < 5:
+            maxpos = hg_pdata.index(max(hg_pdata))
+            hg_peak1.append(hg_peak[maxpos])
+            hg_peak.pop(maxpos)
+            hg_pdata.pop(maxpos)
+
+        hg_peak1.sort()
+        
+        for i in range(len(hg_peak1)):
+            if i > 0 and i < 4:
+                hg_peaks.append(hg_peak1[i])
+                
+        return 1
+    except Exception as e:
+        print("Error line: {}\nError: {}".format(e.__traceback__.tb_lineno, e))
+        return 0
+
+def find_ar_peaks():
+    try:
+        global ar_peaks
+        
+        ar_pdata = ar_data[ar_peak].tolist()
+        ar_q1_peak = []
+        ar_q2_peak = []
+        ar_q3_peak = []
+        
+        #find q2 peak
+        maxpos = ar_pdata.index(max(ar_pdata))
+        ar_peaks.append(ar_peak[maxpos])
+        
+        #find q1 peak
+        ar_q1 = (ar_peak[maxpos])/2
+
+        for i in ar_peak:
+            if i < ar_q1:
+                ar_q1_peak.append(i)
+                
+        ar_q1_peaks = ar_data[ar_q1_peak].tolist()
+        q1_peak = ar_q1_peaks.index(max(ar_q1_peaks))
+        ar_peaks.append(ar_peak[q1_peak])
+        
+        #find q3 peak
+        ar_q3 = ar_peak[maxpos] + dist
+        
+        for i in ar_peak:
+            if i > ar_q3:
+                ar_q3_peak.append(i)
+                
+        q3_pos = (len(ar_peak)) - (len(ar_q3_peak))       
+        ar_q3_peaks = ar_data[ar_q3_peak].tolist()
+        q3_peak = ar_q3_peaks.index(max(ar_q3_peaks))
+        ar_peaks.append(ar_peak[q3_peak + q3_pos])
+        
+        #find q2 peak
+        ar_q2 = dist * 1.1
+        
+        for i in ar_peak:
+            if i > ar_q2 and i < ar_q3:
+                ar_q2_peak.append(i)
+                
+        q2_pos = (len(ar_peak) - len(ar_q2_peak) - len(ar_q3_peak))       
+        ar_q2_peaks = ar_data[ar_q2_peak].tolist()
+        q2_peak = ar_q2_peaks.index(max(ar_q2_peaks))
+        ar_peaks.append(ar_peak[q2_peak + q2_pos])
+        ar_peaks.sort()
+        
+        return 1
+    except Exception as e:
+        print("Error line: {}\nError: {}".format(e.__traceback__.tb_lineno, e))
+        return 0
+    
 def thread_1():
     global mode, image_mode, numb_ofscan
     scan_time = 0
@@ -1322,7 +1522,24 @@ def thread_2():
             raise Exception
     print('Auto Scaling Complete')
     ui.statusbar.showMessage("AUTO SCALING Complete")
-     
+
+def thread_3():
+    ui.statusbar.showMessage("FINGING PEAK")
+    try: 
+        check = find_hgar_dividerpoint()
+        if check != 1:
+            raise
+        check = find_hg_peaks()
+        if check != 1:
+            raise
+        check = find_ar_peaks()
+        if check != 1:
+            raise
+        ui.statusbar.showMessage("DONE")
+    except Exception as e:
+        print("Error line: {}\nError: {}".format(e.__traceback__.tb_lineno, e))
+        return 0
+         
 if __name__ == "__main__":
     try:		
         app = QtWidgets.QApplication(sys.argv)
