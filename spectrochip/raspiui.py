@@ -198,6 +198,8 @@ class Ui_mainwindow(object):
         
         self.w_cal_button = QtWidgets.QPushButton(self.centralwidget)
         self.w_cal_button.setGeometry(QtCore.QRect(670, 370, 90, 30))
+        self.w_cal_button_label = QtWidgets.QLabel(self.centralwidget)
+        self.w_cal_button_label.setGeometry(QtCore.QRect(770, 380, 300, 16))
         
         self.max_shutter_label = QtWidgets.QLabel(self.centralwidget)
         self.max_shutter_label.setGeometry(QtCore.QRect(330, 60, 120, 16))		
@@ -333,13 +335,14 @@ class Ui_mainwindow(object):
         self.I_thr_tolerance_label.setText(_translate("mainwindow", "Thr tolerance"))
         self.numberof_scan_label.setText(_translate("mainwindow", "Num of scan"))
         self.w_cal_button.setText(_translate("mainwindow", "Calculate"))
-        self.cameraspec_label.setText(_translate("mainwindow", "Camera Specification"))
+        self.cameraspec_label.setText(_translate("mainwindow", "Sensor Specification"))
         self.cameraname_label.setText(_translate("mainwindow", "Model : OV9281"))
-        self.camerawidth_label.setText(_translate("mainwindow", "IMG Width : 1280"))
-        self.cameraheight_label.setText(_translate("mainwindow", "IMG Height : 800"))
+        self.camerawidth_label.setText(_translate("mainwindow", "IMG Width : 1280 Pixel"))
+        self.cameraheight_label.setText(_translate("mainwindow", "IMG Height : 800 Pixel"))
         self.camerapixelsize_label.setText(_translate("mainwindow", "Pixel Size : 3 \u03BCm x 3 \u03BCm"))
         self.window_length_label.setText(_translate("mainwindow", "W_Length"))
         self.polyorder_label.setText(_translate("mainwindow", "PolyOrder"))
+        self.w_cal_button_label.setText(_translate("mainwindow", "Press start to use calculate"))
             
         self.pixel_graph.setBackground('w')
         self.pixel_graph.setLabel('left', 'Intensity')
@@ -436,6 +439,7 @@ class Ui_mainwindow(object):
             mode = 10
             
         self.w_cal_button.setEnabled(True)
+        self.w_cal_button_label.setVisible(False)
         thread1 = threading.Thread(target = thread_1)
         thread1.daemon = True
         thread1.start()
@@ -936,38 +940,51 @@ class Ui_w_calibration(object):
         try:
             x1 = []
             y1 = []
-            lam1 = self.pixel1.text()
-            lam2 = self.pixel2.text()
-            lam3 = self.pixel3.text()
-            lam4 = self.pixel4.text()
-            lam5 = self.pixel5.text()
-            lam6 = self.pixel6.text()
-            lam7 = self.pixel7.text()
+
+            if (float(self.pixel1.text()) > 0):
+                x1.append(float(self.pixel1.text()))
+            if (float(self.pixel2.text()) > 0):
+                x1.append(float(self.pixel2.text()))
+            if (float(self.pixel3.text()) > 0):
+                x1.append(float(self.pixel3.text()))
+            if (float(self.pixel4.text()) > 0):
+                x1.append(float(self.pixel4.text()))
+            if (float(self.pixel5.text()) > 0):
+                x1.append(float(self.pixel5.text()))
+            if (float(self.pixel6.text()) > 0):
+                x1.append(float(self.pixel6.text()))
+            if (float(self.pixel7.text()) > 0):
+                x1.append(float(self.pixel7.text()))
+            if (float(self.pixel8.text()) > 0):
+                x1.append(float(self.pixel8.text()))
+            if (float(self.pixel9.text()) > 0):
+                x1.append(float(self.pixel9.text()))
+            if (float(self.pixel10.text()) > 0):
+                x1.append(float(self.pixel10.text()))
+                
+            if (float(self.lambda1.text()) > 0):
+                y1.append(float(self.lambda1.text()))
+            if (float(self.lambda2.text()) > 0):
+                y1.append(float(self.lambda2.text()))
+            if (float(self.lambda3.text()) > 0):
+                y1.append(float(self.lambda3.text()))
+            if (float(self.lambda4.text()) > 0):
+                y1.append(float(self.lambda4.text()))
+            if (float(self.lambda5.text()) > 0):
+                y1.append(float(self.lambda5.text()))
+            if (float(self.lambda6.text()) > 0):
+                y1.append(float(self.lambda6.text()))
+            if (float(self.lambda7.text()) > 0):
+                y1.append(float(self.lambda7.text()))
+            if (float(self.lambda8.text()) > 0):
+                y1.append(float(self.lambda8.text()))
+            if (float(self.lambda9.text()) > 0):
+                y1.append(float(self.lambda9.text()))
+            if (float(self.lambda10.text()) > 0):
+                y1.append(float(self.lambda10.text()))
             
-            l1 = self.lambda1.text()
-            l2 = self.lambda2.text()
-            l3 = self.lambda3.text()
-            l4 = self.lambda4.text()
-            l5 = self.lambda5.text()
-            l6 = self.lambda6.text()
-            l7 = self.lambda7.text()
-            
-            x1.append(float(lam1))
-            x1.append(float(lam2))
-            x1.append(float(lam3))
-            x1.append(float(lam4))
-            x1.append(float(lam5))
-            x1.append(float(lam6))
-            x1.append(float(lam7))
-            
-            y1.append(float(l1))
-            y1.append(float(l2))
-            y1.append(float(l3))
-            y1.append(float(l4))
-            y1.append(float(l5))
-            y1.append(float(l6))
-            y1.append(float(l7))
-            
+            if len(x1) != len(y1):
+                raise Exception ("The quantity of lambda and pixel have to be the same")
             z1 = np.polyfit(x1, y1, 3)
             p0 = []
             for i in range(len(z1)):
@@ -1030,7 +1047,7 @@ class Ui_w_calibration(object):
             c_draw_wgraph = 1
             return 1
         except Exception as e:
-            print('error:{}'.format(e))
+            print("Error line: {}\nError: {}".format(e.__traceback__.tb_lineno, e))
             return 0
       
     def w_draw_wgraph(self):
