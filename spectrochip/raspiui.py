@@ -942,6 +942,8 @@ class Ui_w_calibration(object):
     def w_cal_button_clicked(self):
         global c_draw_wgraph
         try:
+            ui.statusbar.showMessage("Wavelength Equation Calculating")
+            
             x1 = []
             y1 = []
 
@@ -1049,9 +1051,11 @@ class Ui_w_calibration(object):
             if check != 1:
                 raise Exception
             c_draw_wgraph = 1
+            ui.statusbar.showMessage("Wavelength Equation Calculate Complete")
             return 1
         except Exception as e:
             print("Error line: {}\nError: {}".format(e.__traceback__.tb_lineno, e))
+            ui.statusbar.showMessage("Wavelength Calculate ERROR")
             return 0
       
     def w_draw_wgraph(self):
