@@ -65,7 +65,6 @@ numb_ofscan = []
 ncolmean = []
 
 hg_max = 0
-centerline_height = []
 hg_data = []
 hg_peak = []
 hg_peaks = []
@@ -74,12 +73,15 @@ ar_peak = []
 ar_peaks = []
 dist = 0
 
+hgar_temp = [0] * 10
+
 class SignalCommunication(QtCore.QObject):
     new_image = QtCore.pyqtSignal()
     new_y0 = QtCore.pyqtSignal()
     new_data = QtCore.pyqtSignal()
     new_wdata = QtCore.pyqtSignal()
     new_goal_st =  QtCore.pyqtSignal()
+    new_pixel = QtCore.pyqtSignal()
 
 class Ui_mainwindow(object):
     def setupUi(self, mainwindow):
@@ -853,7 +855,9 @@ class Ui_w_calibration(object):
         self.ar_autofindpeak_btn.clicked.connect(self.ar_autofindpeak_btn_clicked)
         
         self.ar_autopeak_checkbox.toggled.connect(self.ar_autopeak_checkbox_check)
-
+        
+        signalComm.new_pixel.connect(self.update_pixel)
+        
     def retranslateUi(self, w_calibration):
         _translate = QtCore.QCoreApplication.translate
         w_calibration.setWindowTitle(_translate("w_calibration", "Wavelength Calibration"))
@@ -1068,14 +1072,79 @@ class Ui_w_calibration(object):
     def ar_autopeak_checkbox_check(self):
         if self.ar_autopeak_checkbox.isChecked() == True:
             self.ar_autofindpeak_btn.setEnabled(True)
+            self.lambda1.setEnabled(False)
+            self.lambda2.setEnabled(False)
+            self.lambda3.setEnabled(False)
+            self.lambda4.setEnabled(False)
+            self.lambda5.setEnabled(False)
+            self.lambda6.setEnabled(False)
+            self.lambda7.setEnabled(False)
+            self.lambda8.setEnabled(False)
+            self.lambda9.setEnabled(False)
+            self.lambda10.setEnabled(False)
+            
+            hgar_temp[0] = self.lambda1.text()
+            hgar_temp[1] = self.lambda2.text()
+            hgar_temp[2] = self.lambda3.text()
+            hgar_temp[3] = self.lambda4.text()
+            hgar_temp[4] = self.lambda5.text()
+            hgar_temp[5] = self.lambda6.text()
+            hgar_temp[6] = self.lambda7.text()
+            hgar_temp[7] = self.lambda8.text()
+            hgar_temp[8] = self.lambda9.text()
+            hgar_temp[9] = self.lambda10.text()
+            
+            self.lambda1.setText(config['calibration_peak']['lamdba1'])
+            self.lambda2.setText(config['calibration_peak']['lamdba2'])
+            self.lambda3.setText(config['calibration_peak']['lamdba3'])
+            self.lambda4.setText(config['calibration_peak']['lamdba4'])
+            self.lambda5.setText(config['calibration_peak']['lamdba5'])
+            self.lambda6.setText(config['calibration_peak']['lamdba6'])
+            self.lambda7.setText(config['calibration_peak']['lamdba7'])
+            self.lambda8.setText(config['calibration_peak']['lamdba8'])
+            self.lambda9.setText(config['calibration_peak']['lamdba9'])
+            self.lambda10.setText(config['calibration_peak']['lamdba10'])
         else:
             self.ar_autofindpeak_btn.setEnabled(False)
-    
+            self.lambda1.setEnabled(True)
+            self.lambda2.setEnabled(True)
+            self.lambda3.setEnabled(True)
+            self.lambda4.setEnabled(True)
+            self.lambda5.setEnabled(True)
+            self.lambda6.setEnabled(True)
+            self.lambda7.setEnabled(True)
+            self.lambda8.setEnabled(True)
+            self.lambda9.setEnabled(True)
+            self.lambda10.setEnabled(True)
+            
+            self.lambda1.setText(hgar_temp[0])
+            self.lambda2.setText(hgar_temp[1])
+            self.lambda3.setText(hgar_temp[2])
+            self.lambda4.setText(hgar_temp[3])
+            self.lambda5.setText(hgar_temp[4])
+            self.lambda6.setText(hgar_temp[5])
+            self.lambda7.setText(hgar_temp[6])
+            self.lambda8.setText(hgar_temp[7])
+            self.lambda9.setText(hgar_temp[8])
+            self.lambda10.setText(hgar_temp[9])
+            
     def ar_autofindpeak_btn_clicked(self):
         thread3 = threading.Thread(target = thread_3)
         thread3.daemon = True
         thread3.start()
-                        
+    
+    def update_pixel(self):
+        self.pixel1.setText(str(hg_peaks[0]))
+        self.pixel2.setText(str(hg_peaks[1]))
+        self.pixel3.setText(str(hg_peaks[2]))
+        self.pixel4.setText(str(ar_peaks[0]))
+        self.pixel5.setText(str(ar_peaks[1]))
+        self.pixel6.setText(str(ar_peaks[2]))
+        self.pixel7.setText(str(ar_peaks[3]))
+        self.pixel8.setText('0')
+        self.pixel9.setText('0')
+        self.pixel10.setText('0')
+                            
 def takephoto():
     try:
         shutter = ui.shutter_edit.text()
@@ -1254,7 +1323,7 @@ def save_data():
 
 def find_hgar_dividerpoint():
     try:
-        global hg_max, hg_data, hg_peak, ar_data, ar_peak, centerline_height, dist
+        global hg_max, hg_data, hg_peak, ar_data, ar_peak, dist
         
         yData = ncolmean
         
@@ -1278,11 +1347,7 @@ def find_hgar_dividerpoint():
             p_peaksmax2 = peaks[p_peaksmax_index2 + 1]
             dist = p_peaksmax2 - p_peaksmax1
             hg_max = p_peaksmax2 + dist
-
-        centerline_height = int(yData[p_peaksmax1]) + 1
-        centerlinex = [hg_max] * centerline_height    
-        centerliney = np.arange(0,centerline_height)    
-
+        
         for i in peaks:
             if i < hg_max:
                 hg_peak.append(i)
@@ -1322,7 +1387,9 @@ def find_hg_peaks():
 
 def find_ar_peaks():
     try:
-        global ar_peaks
+        global ar_peaks, hg_max
+        
+        hg_max = hg_max + 1
         
         ar_pdata = ar_data[ar_peak].tolist()
         ar_q1_peak = []
@@ -1331,7 +1398,7 @@ def find_ar_peaks():
         
         #find q2 peak
         maxpos = ar_pdata.index(max(ar_pdata))
-        ar_peaks.append(ar_peak[maxpos])
+        ar_peaks.append(ar_peak[maxpos] + hg_max)
         
         #find q1 peak
         ar_q1 = (ar_peak[maxpos])/2
@@ -1342,7 +1409,7 @@ def find_ar_peaks():
                 
         ar_q1_peaks = ar_data[ar_q1_peak].tolist()
         q1_peak = ar_q1_peaks.index(max(ar_q1_peaks))
-        ar_peaks.append(ar_peak[q1_peak])
+        ar_peaks.append(ar_peak[q1_peak] + hg_max)
         
         #find q3 peak
         ar_q3 = ar_peak[maxpos] + dist
@@ -1354,7 +1421,7 @@ def find_ar_peaks():
         q3_pos = (len(ar_peak)) - (len(ar_q3_peak))       
         ar_q3_peaks = ar_data[ar_q3_peak].tolist()
         q3_peak = ar_q3_peaks.index(max(ar_q3_peaks))
-        ar_peaks.append(ar_peak[q3_peak + q3_pos])
+        ar_peaks.append(ar_peak[q3_peak + q3_pos] + hg_max)
         
         #find q2 peak
         ar_q2 = dist * 1.1
@@ -1366,7 +1433,7 @@ def find_ar_peaks():
         q2_pos = (len(ar_peak) - len(ar_q2_peak) - len(ar_q3_peak))       
         ar_q2_peaks = ar_data[ar_q2_peak].tolist()
         q2_peak = ar_q2_peaks.index(max(ar_q2_peaks))
-        ar_peaks.append(ar_peak[q2_peak + q2_pos])
+        ar_peaks.append(ar_peak[q2_peak + q2_pos] + hg_max)
         ar_peaks.sort()
         
         return 1
@@ -1564,18 +1631,36 @@ def thread_2():
 def thread_3():
     ui.statusbar.showMessage("FINGING PEAK")
     try: 
+        global hg_peak, hg_peaks, ar_peak, ar_peaks
+        
+        if not isinstance(hg_peak, list):
+            hg_peak = hg_peak.tolist()
+        if not isinstance(hg_peaks, list):
+            hg_peaks = hg_peaks.tolist()
+        if not isinstance(ar_peak, list):
+            ar_peak = ar_peak.tolist()
+        if not isinstance(ar_peaks, list):
+            ar_peaks = ar_peaks.tolist()
+        
+        hg_peak.clear()       
+        hg_peaks.clear()
+        ar_peak.clear() 
+        ar_peaks.clear()
+        
         check = find_hgar_dividerpoint()
         if check != 1:
-            raise
+            raise Exception ("Cannot find Hg-Ar dividerpoint")
         check = find_hg_peaks()
         if check != 1:
-            raise
+            raise Exception ("Cannot find Hg peak")
         check = find_ar_peaks()
         if check != 1:
-            raise
+            raise Exception ("Cannot find Ar peak")
+        signalComm.new_pixel.emit()
         ui.statusbar.showMessage("DONE")
     except Exception as e:
         print("Error line: {}\nError: {}".format(e.__traceback__.tb_lineno, e))
+        ui.statusbar.showMessage("AUTO FIND PEAK ERROR")
         return 0
          
 if __name__ == "__main__":
