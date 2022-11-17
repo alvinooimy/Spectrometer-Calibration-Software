@@ -842,11 +842,13 @@ class Ui_w_calibration(object):
         self.pixel_label = QtWidgets.QLabel(w_calibration)
         self.pixel_label.setGeometry(QtCore.QRect(140, 20, 100, 16))
         
-        self.ar_autopeak_checkbox = QtWidgets.QCheckBox("Hg-Ar Find Peak   ",w_calibration)
+        self.ar_autopeak_checkbox = QtWidgets.QCheckBox("Hg-Ar Find Peaks   ",w_calibration)
         self.ar_autopeak_checkbox.setGeometry(QtCore.QRect(10, 440, 140, 16))
         self.ar_autopeak_checkbox.setLayoutDirection(QtCore.Qt.LeftToRight)       
         self.ar_autofindpeak_btn = QtWidgets.QPushButton(w_calibration)
         self.ar_autofindpeak_btn.setGeometry(QtCore.QRect(10, 460, 90, 30))
+        self.autopeak_label = QtWidgets.QLabel(w_calibration)
+        self.autopeak_label.setGeometry(QtCore.QRect(160, 440, 200, 16))
         
         self.retranslateUi(w_calibration)
         QtCore.QMetaObject.connectSlotsByName(w_calibration)
@@ -884,6 +886,7 @@ class Ui_w_calibration(object):
         self.label_11.setText(_translate("w_calibration", "9"))
         self.label_12.setText(_translate("w_calibration", "10"))
         self.ar_autofindpeak_btn.setText(_translate("w_calibration", "AUTO FIND"))
+        self.autopeak_label.setText(_translate("w_calibration", "( Defaut Wavelengths )"))
         
         self.lambda1.setText(config['calibration_peak']['lamdba1'])
         self.lambda2.setText(config['calibration_peak']['lamdba2'])
