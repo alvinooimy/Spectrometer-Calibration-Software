@@ -266,6 +266,17 @@ class Ui_mainwindow(object):
         self.polyorder_edit = QtWidgets.QLineEdit(self.centralwidget)
         self.polyorder_edit.setGeometry(QtCore.QRect(500, 290, 50, 30))
         
+        self.changedefault_label = QtWidgets.QLabel(self.centralwidget)
+        self.changedefault_label.setGeometry(QtCore.QRect(1000, 20, 200, 16))
+        self.roi_default_checkbox = QtWidgets.QCheckBox("ROI",self.centralwidget)
+        self.roi_default_checkbox.setGeometry(QtCore.QRect(1000, 40, 95, 16))
+        self.roi_default_checkbox.setLayoutDirection(QtCore.Qt.LeftToRight)        
+        self.wavelength_parameter_checkbox = QtWidgets.QCheckBox("Wavelength Parameter",self.centralwidget)
+        self.wavelength_parameter_checkbox.setGeometry(QtCore.QRect(1000, 60, 200, 16))
+        self.wavelength_parameter_checkbox.setLayoutDirection(QtCore.Qt.LeftToRight)        
+        self.cahnge_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.cahnge_btn.setGeometry(QtCore.QRect(1000, 80, 75, 25))
+        
         self.statusbar.showMessage("INITIALING")
         self.retranslateUi(mainwindow)
         QtCore.QMetaObject.connectSlotsByName(mainwindow)
@@ -275,6 +286,7 @@ class Ui_mainwindow(object):
         self.auto_scaling.clicked.connect(self.auto_scaling_clicked)	
         self.auto_roi.clicked.connect(self.auto_roi_clicked)	
         self.w_cal_button.clicked.connect(self.w_cal_button_clicked)	
+        self.cahnge_btn.clicked.connect(self.change_btn_clicked)	
         
         self.continue_checkbox.toggled.connect(self.continue_checkbox_check)
         self.sg_filter_checkbox.toggled.connect(self.sg_filter_checkbox_check)
@@ -344,6 +356,8 @@ class Ui_mainwindow(object):
         self.window_length_label.setText(_translate("mainwindow", "W_Length"))
         self.polyorder_label.setText(_translate("mainwindow", "PolyOrder"))
         self.w_cal_button_label.setText(_translate("mainwindow", "Press start to use calculate"))
+        self.changedefault_label.setText(_translate("mainwindow", "Change Default :"))
+        self.cahnge_btn.setText(_translate("mainwindow", "Change"))
             
         self.pixel_graph.setBackground('w')
         self.pixel_graph.setLabel('left', 'Intensity')
@@ -497,6 +511,33 @@ class Ui_mainwindow(object):
             y = ncolmean
         c_ui.c_graph.plot(x, y)
         secondwindow.show()
+    
+    def change_btn_clicked(self):
+        self.statusbar.showMessage("Changing Default")
+        
+        if self.roi_default_checkbox.isChecked() == True or self.wavelength_parameter_checkbox.isChecked() == True:
+            if self.roi_default_checkbox.isChecked() == True:
+                config['default']['x'] = self.x0.text()
+                config['default']['y'] = self.y0.text()
+                config['default']['deltax'] = self.x1.text()
+                config['default']['deltay'] = self.y1.text()
+            
+            if self.wavelength_parameter_checkbox.isChecked() == True:
+                config['wavelength_calibration']['a3'] = self.a3.text()
+                config['wavelength_calibration']['a2'] = self.a2.text()
+                config['wavelength_calibration']['a1'] = self.a1.text()
+                config['wavelength_calibration']['a0'] = self.a0.text()
+                config['wavelength_calibration']['e3'] = self.e3.text()
+                config['wavelength_calibration']['e2'] = self.e2.text()
+                config['wavelength_calibration']['e1'] = self.e1.text()
+                config['wavelength_calibration']['e0'] = self.e0.text()
+            
+            with open('config.ini','w') as configfile:
+                config.write(configfile)
+                
+            self.statusbar.showMessage("Default change complete")
+        else:
+            self.statusbar.showMessage("Please tick 1 or both checkbox to change default")
             
     def continue_checkbox_check(self):
         global flag
