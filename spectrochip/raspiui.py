@@ -31,7 +31,7 @@ I_max = config['auto_scaling']['I_max']
 I_thr_percentage = config['auto_scaling']['I_thr_percentage']
 I_thr_tolerance = config['auto_scaling']['I_thr_tolerance']
 
-numberof_scan_config = config['numof_scan']['numberof_scan']
+num_scan = config['numof_scan']['numberof_scan']
 
 w_length = config['sgfilter']['window_length']
 poly_order = config['sgfilter']['polyorder']
@@ -52,8 +52,7 @@ mode = 0
 auto_mode = 0
 y_mode = 0
 flag = 0
-roi_mode = 0
-num_scan = numberof_scan_config
+roi_mode = 1
 
 max_value = 0
 goal_st = 0
@@ -330,7 +329,7 @@ class Ui_mainwindow(object):
         self.max_anologgain_label.setText(_translate("mainwindow", "Max: " + str(ag_max)))
         self.max_digitalgain_label.setText(_translate("mainwindow", "Not Functioning"))
         self.auto_roi_label.setText(_translate("mainwindow", "ROI Scan"))
-        self.auto_roi.setText(_translate("mainwindow", "AUTO"))
+        self.auto_roi.setText(_translate("mainwindow", "MANUAL"))
         self.auto_scaling_label.setText(_translate("mainwindow", "Auto Scaling"))
         self.I_max_label.setText(_translate("mainwindow", "I Max"))
         self.I_thr_percentage_label.setText(_translate("mainwindow", "Thr percentage"))
@@ -389,7 +388,7 @@ class Ui_mainwindow(object):
         self.I_thr_tolerance_label1.setText(_translate("mainwindow", str(I_thr_top) + ' ~ ' + str(I_thr_bottom)))
         self.I_thr_percentage_label1.setText(_translate("mainwindow", str(I_thr)))
         
-        self.numberof_scan_edit.setText(numberof_scan_config)
+        self.numberof_scan_edit.setText(num_scan)
         self.numberof_scan_label1.setText(_translate("mainwindow", str(((float(shutter) / 1000) * float(num_scan) + 500 * float(num_scan)) / 1000 ) + ' seconds'))
         
         self.window_length_edit.setText(w_length)
@@ -418,9 +417,6 @@ class Ui_mainwindow(object):
         self.window_length_edit.setValidator(QtGui.QIntValidator())
         self.polyorder_edit.setValidator(QtGui.QIntValidator())
         
-        self.x0.setEnabled(False)
-        self.y0.setEnabled(False)
-        self.x1.setEnabled(False)
         self.Yaxis_max.setEnabled(False)
         self.w_cal_button.setEnabled(False)
         
