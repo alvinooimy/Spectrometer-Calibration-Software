@@ -8,3 +8,5 @@ v0.2 add new features to the raspiui.py :
 v0.3 add sg
 
 v0.4 add auto find peak for Hg-Ar light
+
+v0.5 add change default
