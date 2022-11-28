@@ -305,7 +305,7 @@ class Ui_mainwindow(object):
         global I_max, I_thr_percentage, I_thr_tolerance, I_thr, I_thr_top, I_thr_bottom
         
         _translate = QtCore.QCoreApplication.translate
-        mainwindow.setWindowTitle(_translate("mainwindow", "test"))
+        mainwindow.setWindowTitle(_translate("mainwindow", "Spectrochip"))
         self.start.setText(_translate("mainwindow", "START"))
         self.format_box.setItemText(0, _translate("mainwindow", "BMP"))
         self.format_box.setItemText(1, _translate("mainwindow", "JPG"))
@@ -1316,11 +1316,18 @@ def cal_number_ofscan():
             
 def save_data():
     try:
-        path = 'data.txt'
+        path = 'raw_data.txt'
+        path1 = 'sg_data.txt'
+        
         f = open(path, 'w')
+        f1 = open(path1, 'w')
+        
+        y = signal.savgol_filter(ncolmean, int(ui.window_length_edit.text()), int(ui.polyorder_edit.text()))
         for i in ncolmean:
             f.write(str(i)+"\n")
+            f1.write(str(i)+"\n")
         f.close()
+        f1.close()
         print("Save Complete")
         
         return 1
