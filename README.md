@@ -1,5 +1,5 @@
-# spectrochip
-Use python to take spectrum
+# Spectrometer Calibration Software
+Use python to take spectrum and calibrate wavelegnth
 
 v0.2 add new features to the raspiui.py :
 1. add new GUI
